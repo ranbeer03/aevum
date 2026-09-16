@@ -1,6 +1,6 @@
 ---
 name: Aevum
-description: A UAE cement-materials trading house rendered as its own ground — a live procedural quarry world behind every page, translucent ivory plates, antique gold, tracked-out Josefin display.
+description: A UAE cement-materials trading house rendered as its own ground. A live quarry world behind every page, translucent ivory plates, antique gold reserved for what you can press, and tracked uppercase display at Regular weight. Measured against Apple's Human Interface Guidelines foundations; every colour pair carries its contrast ratio.
 colors:
   forest-975: "#071510"
   forest-950: "#0a1b14"
@@ -15,37 +15,38 @@ colors:
   gold: "#c6a96c"
   gold-bright: "#d8bc80"
   gold-deep: "#77613a"
-  ink-on-ivory: "#14261d"
+  gold-plate: "#604c2c"  # interactive accent ON the ivory plate: 6.1:1 (gold-deep measured 3.97, a failure at 13px)
+  ink-on-ivory: "#14261d"  # 11.9:1 on the plate; dim .74 = 5.8:1; faint .70 = 5.1:1
   error: "#d97b6c"
 typography:
   hero:
-    fontFamily: "Josefin Sans, Futura, Avenir Next, sans-serif"
+    fontFamily: "Albert Sans, Futura, Avenir Next, sans-serif"
     fontSize: "clamp(1.9rem, 0.9rem + 4.2vw, 4rem)"
-    fontWeight: 300
-    lineHeight: 1.32
-    letterSpacing: "0.2em"
+    fontWeight: 400
+    lineHeight: 1.1
+    letterSpacing: "0.08em"
   h1:
-    fontFamily: "Josefin Sans, Futura, Avenir Next, sans-serif"
+    fontFamily: "Albert Sans, Futura, Avenir Next, sans-serif"
     fontSize: "clamp(1.7rem, 1rem + 3vw, 3.3rem)"
-    fontWeight: 300
-    lineHeight: 1.32
-    letterSpacing: "0.2em"
+    fontWeight: 400
+    lineHeight: 1.1
+    letterSpacing: "0.08em"
   h2:
-    fontFamily: "Josefin Sans, Futura, Avenir Next, sans-serif"
+    fontFamily: "Albert Sans, Futura, Avenir Next, sans-serif"
     fontSize: "clamp(1.35rem, 0.95rem + 1.8vw, 2.3rem)"
-    fontWeight: 300
-    lineHeight: 1.32
-    letterSpacing: "0.2em"
+    fontWeight: 400
+    lineHeight: 1.18
+    letterSpacing: "0.1em"
   h3:
-    fontFamily: "Josefin Sans, Futura, Avenir Next, sans-serif"
+    fontFamily: "Albert Sans, Futura, Avenir Next, sans-serif"
     fontSize: "clamp(1.05rem, 0.95rem + 0.6vw, 1.35rem)"
-    fontWeight: 300
-    lineHeight: 1.22
-    letterSpacing: "0.2em"
+    fontWeight: 400
+    lineHeight: 1.26
+    letterSpacing: "0.12em"
   lede:
     fontFamily: "Spectral, Georgia, serif"
     fontSize: "clamp(1.06rem, 1rem + 0.35vw, 1.25rem)"
-    fontWeight: 300
+    fontWeight: 400
     lineHeight: 1.58
   body:
     fontFamily: "Spectral, Georgia, serif"
@@ -53,15 +54,15 @@ typography:
     fontWeight: 400
     lineHeight: 1.62
   small:
-    fontFamily: "Josefin Sans, Futura, Avenir Next, sans-serif"
+    fontFamily: "Albert Sans, Futura, Avenir Next, sans-serif"
     fontSize: "0.9375rem"
     fontWeight: 400
     letterSpacing: "0.16em"
   small-caps:
-    fontFamily: "Josefin Sans, Futura, Avenir Next, sans-serif"
+    fontFamily: "Albert Sans, Futura, Avenir Next, sans-serif"
     fontSize: "0.8125rem"
     fontWeight: 400
-    letterSpacing: "0.24em"
+    letterSpacing: "0.28em"
 rounded:
   none: "0"
   pill: "999px"
@@ -88,8 +89,9 @@ components:
     backgroundColor: "{colors.gold-bright}"
     textColor: "{colors.forest-950}"
   link-line:
-    textColor: "{colors.gold}"
-    typography: "{typography.small}"
+    textColor: "{colors.gold}"        # {colors.gold-plate} on ivory sections
+    typography: "{typography.small-caps}"
+    fontWeight: 500
   field-input:
     backgroundColor: "transparent"
     textColor: "{colors.ivory}"
@@ -111,10 +113,10 @@ The doctrine is **hybrid scrub**: everything spatial (the camera flight, paralla
 
 **Key Characteristics:**
 - One procedural 3D quarry world behind everything; sections name camera stops, scroll spans them, pages fly across them
-- Tracked-out uppercase Josefin Sans display (mont-fort DNA) over editorial Spectral text
+- Tracked uppercase Albert Sans display at Regular weight, tracking tightening as size grows, over editorial Spectral text
 - Translucent ivory plates and scrims floating over the live world — alpha only, never blur
-- Antique gold spent as a precious seam: hairlines, small caps, dust, the vein, one solid action — never poured
-- One-shot text reveals; raking-light hovers; film grain over everything
+- Antique gold means one thing, interactive: links, buttons, active nav, the focus ring, the rail's live tick. Labels and small caps are ivory. Never poured
+- One-shot text reveals; raking-light hovers; no film grain (continuous decorative motion, removed in the HIG pass)
 - Hairline-ruled rows instead of cards; square frames, pill buttons
 
 ## Colors
@@ -122,17 +124,17 @@ The doctrine is **hybrid scrub**: everything spatial (the camera flight, paralla
 A dark mineral palette: six forest greens as strata of depth, three ivories as the limestone seam, three golds as the vein running through it. The WebGL world carries its own Three.js constants (bench ivory, heat-toned rock, ember orange) documented in **The World** — they harmonize with, but are not, the CSS tokens.
 
 ### Primary
-- **Antique Gold** (#c6a96c): the vein of value. Hairlines (`--forest-line` is gold at 0.22 alpha), small caps, link-lines, the sigil, the drawn route and vein lines, focus outlines, `::selection`, the gold seam inside the 3D pit wall, and exactly one solid button per view.
-- **Bright Gold** (#d8bc80): hover/active states of gold elements — button hover text, solid-button hover fill, footer link hover, depth-rail labels, the `<em>` in the About hero. In the world it is the dawn horizon, the sun color, and the dust.
-- **Deep Gold** (#77613a): `--accent` on ivory sections, where #c6a96c would fail contrast.
+- **Antique Gold** (#c6a96c): the vein of value. Hairlines (`--forest-line` is gold at 0.22 alpha), link-lines, buttons, active navigation, the sigil, the drawn route line, focus outlines, `::selection`, the gold seam inside the 3D pit wall, and exactly one solid button per view. Not labels: gold marks what can be pressed, and nothing else (`color.md`).
+- **Bright Gold** (#d8bc80): hover/active states of gold elements: button hover text, solid-button hover fill, footer link hover, the `<em>` in the About hero. In the world it is the dawn horizon, the sun color, and the dust.
+- **Deep Gold** (#77613a): retained in the world's palette only. As the plate accent it measured 3.97:1 at 13px and was replaced by **Plate Gold** (#604c2c), 6.1:1 on the composited plate.
 
 ### Neutral
 - **Forest 900** (#0d221a): the primary dark ground (`--bg`, body, theme-color). The body color is static — the sense of darkening with depth now comes from the world's fog and sky grading, not a background scrub.
-- **Forest 975** (#071510): bedrock — footer, mobile drawer, and the base of every translucent plate over the world: the solid-nav gradient (0.92→0.72), the contact-form panel (0.76), the ContactCTA band (0.5), `.copy-shield` scrims, depth-rail label chips (0.86). All alpha, never blur.
+- **Forest 975** (#071510): bedrock — footer, mobile drawer, and the base of every translucent plate over the world: the solid-nav gradient (0.92→0.72), the contact-form panel (0.76), the ContactCTA band (0.5), `.copy-shield` scrims, depth-rail label chips (0.94, ivory label at 16:1). All alpha, never blur.
 - **Forest 950** (#0a1b14): ink on gold — the solid button's label and `::selection` text; also the world sky's deep horizon (`horizonDeep`).
 - **Forest 850** (#112b21): media-frame loading background.
 - **Forest 700** (#1f4736): faint display accents (the 404 numeral).
-- **Ivory** (#f3efe4): light text on dark; the `.is-light` plate tint, rendered at **0.87 alpha** over the live world (never blurred — see The No-Blur Rule).
+- **Ivory** (#f3efe4): light text on dark; the `.is-light` plate tint, rendered at **0.92 alpha** over the live world (composited ground #e1dfd4) (never blurred — see The No-Blur Rule).
 - **Ink on Ivory** (#14261d): text color inside `.is-light` sections and `<option>` elements.
 - **Error** (#d97b6c): field errors only.
 - Text tiers on dark: `--text-dim` rgba(243,239,228,0.72), `--text-faint` rgba(222,210,180,0.6).
@@ -143,12 +145,12 @@ A dark mineral palette: six forest greens as strata of depth, three ivories as t
 
 ## Typography
 
-**Display Font:** Josefin Sans (with Futura, Avenir Next, sans-serif) — weights 200/300/400 imported; headings set in **300**, UI type (buttons, links, labels) in **400**.
+**Display Font:** Albert Sans (with Futura, Avenir Next, sans-serif) — weights 200/300/400 imported; headings set in **300**, UI type (buttons, links, labels) in **400**.
 **Body Font:** Spectral (with Georgia, serif) — weights 300, 400, 400 italic, 500.
 
 Both are self-hosted via `@fontsource` imports in `Base.astro`; the latin josefin-sans-300 and spectral-400 woff2 files are `<link rel="preload">`ed. No external font hosts, no other weights — do not import new weights casually.
 
-**Character:** Josefin Sans is a geometric sans set light, uppercase, and tracked wide open (0.2em on headings) — engraved signage, not editorial serif. Because tracked uppercase reads wider, the display sizes deliberately sit *below* a serif scale. Spectral keeps long trade copy readable. Hierarchy comes from size, tracking, and the sans/serif contrast — never from weight.
+**Character:** Albert Sans is a geometric sans set light, uppercase, and tracked wide open (0.2em on headings) — engraved signage, not editorial serif. Because tracked uppercase reads wider, the display sizes deliberately sit *below* a serif scale. Spectral keeps long trade copy readable. Hierarchy comes from size, tracking, and the sans/serif contrast — never from weight.
 
 ### Hierarchy
 - **Hero** (300, clamp(1.9rem→4rem), 1.32, 0.2em, uppercase): homepage headline only, split-line revealed over the live world.
@@ -157,10 +159,10 @@ Both are self-hosted via `@fontsource` imports in `Base.astro`; the latin josefi
 - **H3** (300, clamp(1.05rem→1.35rem), 1.22, 0.2em): row names (chain, pillars), facts titles' scale peers.
 - **Lede** (Spectral 300, clamp(1.06rem→1.25rem), 1.58, `--text-dim`): standfirst under every heading, max-width `--container-text`.
 - **Body** (Spectral 400, 1.0625rem, 1.62): running text. `p + p` gets 1em top margin.
-- **Small** (Josefin 400, 0.9375rem, 0.16em, uppercase): button and link-line type.
-- **Micro / small caps** (Josefin 400, 0.8125rem, 0.24em, uppercase, `--accent`): `.small-caps`; variants — field labels 0.18em `--text-dim`, facts titles / ports label / footer headings 0.22em, the "Descend" cue 0.26em, depth-rail labels 0.6rem at 0.3em.
+- **Small** (Albert Sans 400, 0.9375rem, 0.16em, uppercase): button and link-line type.
+- **Micro / small caps** (Albert Sans 400, 0.8125rem, 0.24em, uppercase, `--accent`): `.small-caps`; variants — field labels 0.18em `--text-dim`, facts titles / ports label / footer headings 0.22em, the "Descend" cue 0.26em, depth-rail labels 0.6rem at 0.3em.
 - **Display runs**: nav links 0.9rem/0.12em; incoterm run clamp(1.15rem→1.7rem)/0.12em; port names clamp(1.4rem→2.3rem); drawer links clamp(2.2rem→3.4rem); 404 numeral clamp(5rem→11rem) in forest-700.
-- **Wordmark**: Josefin uppercase, 0.3em tracking (nav 1.35rem, footer 1.6rem), beside the gold triangle sigil.
+- **Wordmark**: Albert Sans uppercase, 0.3em tracking (nav 1.35rem, footer 1.6rem), beside the gold triangle sigil.
 
 **The Tracked-Light Rule.** Display type is always uppercase, always tracked (≥0.12em), and never bold — headings at 300, UI at 400, nothing heavier. `text-wrap: balance` and line breaks do the composition work.
 
@@ -283,7 +285,7 @@ Square-cut and hairline over faceted ground. Media frames, forms, and sections h
 ## Components
 
 ### Buttons (`.btn`)
-- **Shape:** pill (999px), 0.95rem 1.9rem padding, min-height 44px, uppercase Josefin 400 at 0.16em.
+- **Shape:** pill (999px), 0.95rem 1.9rem padding, min-height 44px, uppercase Albert Sans 400 at 0.16em.
 - **Outline (default):** transparent fill, 1px `--line` border, `--text` label. Hover/focus: border and label warm to gold.
 - **Solid (`.btn--solid`):** gold fill, forest-950 label — the one primary action per view (Enquire / Send enquiry / Start the conversation). Hover: gold-bright.
 - **Raking light:** every button carries a `::after` diagonal gold gradient band (105deg) parked at `translateX(-101%)`; hover/focus sweeps it across in 0.7s `--ease-out`. Solid buttons sweep a warm-white band instead.
@@ -291,7 +293,7 @@ Square-cut and hairline over faceted ground. Media frames, forms, and sections h
 - **≤480px:** tracked uppercase pills must hold one line — tracking drops to 0.1em, size to 0.85rem, padding to 0.85rem 1.4rem, `white-space: nowrap`.
 
 ### Link-line (`.link-line`)
-Uppercase small link in `--accent` (Josefin 400, 0.16em) with a 1px `currentColor` underline that rests at `scaleX(0.32)` and grows to full on hover/focus — a seam extending. Carries a small inline arrow SVG.
+Uppercase small link in `--accent` (Albert Sans 400, 0.16em) with a 1px `currentColor` underline that rests at `scaleX(0.32)` and grows to full on hover/focus — a seam extending. Carries a small inline arrow SVG.
 
 ### Raking-light hovers (`.rake-row`, `.rake-media`)
 The inspection-light metaphor: hovering rakes a diagonal gold light across the surface, the way a trader inspects material. `.rake-row` (chain rows, application list items) sweeps a 9%-alpha gold band in 0.9s; `.rake-media` (image panels) sweeps a 16%-alpha band, skewed -4deg, in 1s, above the image (z-index 2). One-directional: the band snaps back off-hover with no transition. Use on interactive rows and linked imagery only.
@@ -320,7 +322,7 @@ Facts blocks open with a hairline and a small-caps gold title. Unconfirmed specs
 Underline-only inputs: transparent ground, 1px `--line` bottom border, no radius, min-height 44px; label above in micro caps (0.18em, `--text-dim`). Focus: border warms to gold (no outline). Error: `.has-error` turns the underline and message #d97b6c; messages are written, human sentences. Selects get a custom stroked chevron in `.select-wrap`. The contact form itself is a hairline-bordered translucent plate (rgba(7,21,16,0.76), no blur).
 
 ### Nav (`Nav.astro`, `transition:persist`)
-Fixed header, transparent at top; past 40px scroll it gains `.is-solid` (a `rgba(7,21,16,0.92)→0.72` forest gradient plate — alpha, not blur — plus a gold hairline bottom border). Scrolling down past 200px hides it (`translateY(-100%)`); any upward scroll returns it. Links are 0.9rem uppercase Josefin in `--text-dim` with a gold underline growing from left on hover/current. Desktop shows a pill Enquire CTA; ≤860px collapses to a two-line toggle opening a full-screen forest-975 drawer that wipes down via `clip-path`, with display links staggered by `--i` and Lenis stopped while open.
+Fixed header, transparent at top; past 40px scroll it gains `.is-solid` (a `rgba(7,21,16,0.92)→0.72` forest gradient plate — alpha, not blur — plus a gold hairline bottom border). Scrolling down past 200px hides it (`translateY(-100%)`); any upward scroll returns it. Links are 0.9rem uppercase Albert Sans in `--text-dim` with a gold underline growing from left on hover/current. Desktop shows a pill Enquire CTA; ≤860px collapses to a two-line toggle opening a full-screen forest-975 drawer that wipes down via `clip-path`, with display links staggered by `--i` and Lenis stopped while open.
 
 ### Footer (`Footer.astro`)
 Forest-975 bedrock band: sigil + wordmark + tagline, Navigate and "Reach us" columns under gold small-caps headings, hairline, then legal line (© year `site.legalName`, Privacy/Terms). Contact rows render only when data exists in `src/data/site.js` — no placeholder text ever ships.
@@ -424,7 +426,7 @@ OWN-WORLD: Deep forest atmosphere #071510–#0d221a; ivory as light and as
 translucent plates over the world (ALPHA ONLY — no backdrop-filter
 anywhere; blur over the live canvas measured 61fps vs 105fps); #c6a96c
 gold as dust, seam, vein, hairline, small caps, one solid action — never
-display type. Josefin Sans 300 tracked-out uppercase display, Spectral
+display type. Albert Sans 300 tracked-out uppercase display, Spectral
 text. Raking-light hovers; film grain.
 STORY: A procurement manager sees two commodities and full-chain UAE
 execution within one screen, believes Aevum is a serious specialist, and
@@ -438,3 +440,50 @@ no seed roll, pinned by brief.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the
 finish review, the verdict, and DESIGN.md.
 ```
+
+
+## HIG pass (v4, branch `apple-design`)
+
+Reviewed against Apple's Human Interface Guidelines foundations: accessibility,
+colour, typography, layout, materials, motion, writing, branding. Platform
+conventions (tab bars, toolbars, sheets) do not apply to a website and were not
+applied. The point of view is kept: the world is the signature and the
+boldness is spent there; everything else got quieter.
+
+**Measured, not estimated.** Every text colour carries its WCAG ratio on the
+surface it sits on, in `global.css`. Two pairs had been failing: faint text on
+the ivory plate (2.85:1) and the plate's gold link colour (3.97:1 at 13px). Now
+5.1:1 and 6.1:1. Small text on the dark ground was raised from 4.8:1 to 7.2:1,
+the figure `dark-mode.md` asks for on small custom text.
+
+**Weights.** No Light (300) faces anywhere. `typography.md`: "avoid light font
+weights, which can be difficult to see, especially when text is small."
+Display 400, body 400, controls 500. The 300 files are not shipped.
+
+**Tracking tightens with size,** as Apple's own tracking table does: hero
+0.06em, h1 0.08, h2 0.10, h3 0.12; 13px labels keep 0.28em; the wordmark keeps
+0.30. The uppercase is the identity, not the airiness.
+
+**Sizes.** 17px body and 13px labels are Apple's iOS and macOS defaults.
+Nothing renders under 11.5px (the rail labels were 9.9px, under the 11pt
+minimum). Buttons are 13px at Medium; on phones they lose tracking, never size.
+
+**One colour, one meaning.** Gold marks what you can press: links, buttons,
+active navigation, the focus ring, the rail's active tick. Labels, headings,
+spec titles and status states are ivory. `color.md`: "using the same or
+similar color to stylize noninteractive text is confusing."
+
+**The one glass surface** is the nav, and it has an opaque fallback under
+`prefers-reduced-transparency` and `prefers-contrast: more`, per the Liquid
+Glass checklist. Plates never blur: glass belongs to the functional layer, not
+content (`materials.md`).
+
+**Motion.** The intro fly-in is the one orchestrated moment. The film-grain
+overlay is gone: continuous decorative motion with no meaning
+(`motion.md`: "Don't add motion for the sake of adding motion").
+
+**Quality floor, verified with Playwright:** no horizontal scroll at 320px; no
+clipped controls at 200% text with hierarchy intact; reduced motion holds the
+world still and hides nothing; keyboard focus is a 2px gold ring at 3px
+offset; frame times unchanged at p50/p95 on desktop and on a 4x-throttled
+phone.

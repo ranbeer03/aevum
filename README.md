@@ -19,6 +19,14 @@ preloader linger far longer than it will in production. Any judgement about
 speed or about how long the loading mark stays up has to be made against
 `npm run preview`.
 
+## Design system
+
+`DESIGN.md` is the design contract. Its "HIG pass" section records the review
+of the site against Apple's Human Interface Guidelines foundations on the
+`apple-design` branch: every colour pair's measured contrast, the weight and
+tracking decisions, what gold is allowed to mean, and the accessibility states
+the one glass surface answers to.
+
 ## Tuning camera stops
 
 ```bash

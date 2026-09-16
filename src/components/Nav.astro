@@ -135,8 +135,8 @@ const current = (href) =>
     position: relative;
     font-family: var(--font-display);
     font-size: 0.9rem;
-    font-weight: 400;
-    letter-spacing: 0.12em;
+    font-weight: 500;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-dim);
     padding: 0.5rem 0;
@@ -222,5 +222,20 @@ const current = (href) =>
   @media (max-width: 860px) {
     .nav__links, .nav__cta { display: none; }
     .nav__toggle { display: flex; }
+  }
+
+  /* The nav is the site's one glass surface. HIG liquid glass checklist:
+     "Reduce Transparency gets an opaque fallback, Increase Contrast gets
+     stronger fills and borders." With either set, the scrim becomes a solid
+     bar the height of the nav, no blur, no fade-out. */
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    .nav.is-solid::before {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      background: var(--forest-975);
+      mask-image: none;
+      height: 100%;
+    }
+    .nav.is-solid { border-bottom-color: var(--line); }
   }
 </style>

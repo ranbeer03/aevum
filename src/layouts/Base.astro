@@ -1,12 +1,14 @@
 ---
 import { ClientRouter } from 'astro:transitions';
-import '@fontsource/albert-sans/300.css';
+// Regular and Medium only. The Light (300) faces are gone: HIG typography,
+// "avoid light font weights, which can be difficult to see, especially when
+// text is small." Two fewer files as well (36 KB).
 import '@fontsource/albert-sans/400.css';
-import '@fontsource/spectral/300.css';
+import '@fontsource/albert-sans/500.css';
 import '@fontsource/spectral/400.css';
 import '@fontsource/spectral/400-italic.css';
 import '../styles/global.css';
-import displayWoff2 from '@fontsource/albert-sans/files/albert-sans-latin-300-normal.woff2?url';
+import displayWoff2 from '@fontsource/albert-sans/files/albert-sans-latin-400-normal.woff2?url';
 import spectralWoff2 from '@fontsource/spectral/files/spectral-latin-400-normal.woff2?url';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
@@ -104,7 +106,6 @@ const canonical = new URL(Astro.url.pathname, site.domain).href;
     </main>
     <Footer />
     <nav class="rail" id="depth-rail" aria-label="Sections"></nav>
-    <div class="grain" aria-hidden="true" transition:persist="grain"></div>
     <script src="../scripts/motion.js"></script>
     {CamDev && <CamDev />}
   </body>

@@ -1,12 +1,17 @@
 /* ============================================================
-   AEVUM design system v3, "the world"
+   AEVUM design system v4, "the world", HIG pass
    Deep Forest Green · White Ivory · Antique Gold
    A persistent Three.js world lives behind every page (.world);
-   sections are transparent or frosted glass over it.
-   Display: Josefin Sans 300, tracked-out uppercase (mont-fort DNA)
-   Text:    Spectral (editorial screen serif)
+   sections are transparent or translucent plates over it.
+   Display: Albert Sans 400, tracked uppercase, tracking tightening with size
+   Text:    Spectral 400 (editorial screen serif)
    Motion:  hybrid scrub. The world moves with the scroll (both
    directions); words reveal once and stay legible.
+
+   Every colour pair below carries its measured WCAG ratio on the surface it
+   sits on. Gold means INTERACTIVE and nothing else (HIG color: one colour,
+   one meaning); labels are ivory. Body 17px and labels 13px are Apple's
+   own defaults; nothing renders under 11.5px.
    ============================================================ */
 
 :root {
@@ -24,19 +29,20 @@
   --gold-bright: #d8bc80;
   --gold-deep: #77613a;
 
-  /* semantic */
-  --text: var(--ivory);
-  --text-dim: rgba(243, 239, 228, 0.72);
-  --text-faint: rgba(222, 210, 180, 0.6);
+  /* semantic, with the ratio each pair measures on this ground (#0d221a) */
+  --text: var(--ivory);                        /* 14.5:1 */
+  --text-dim: rgba(243, 239, 228, 0.72);       /*  8.1:1 */
+  --text-faint: rgba(222, 210, 180, 0.78);     /*  7.2:1  was .6 = 4.8; HIG dark mode asks 7:1 for small custom text */
   --line: var(--forest-line);
-  --accent: var(--gold);
-  --error: #d97b6c;
+  --accent: var(--gold);                       /*  7.4:1  interactive only */
+  --error: #d97b6c;                            /*  5.6:1 */
 
   /* -- type ------------------------------------------------- */
   --font-display: 'Albert Sans', 'Futura', 'Avenir Next', sans-serif;
   --font-text: 'Spectral', 'Georgia', serif;
 
-  /* tracked-out uppercase reads wider, so sizes sit below the serif scale */
+  /* Tracked uppercase reads wider, so sizes sit below the serif scale.
+     17px body and 13px micro are Apple's iOS and macOS defaults. */
   --size-hero: clamp(1.9rem, 0.9rem + 4.2vw, 4rem);
   --size-h1: clamp(1.7rem, 1rem + 3vw, 3.3rem);
   --size-h2: clamp(1.35rem, 0.95rem + 1.8vw, 2.3rem);
@@ -57,21 +63,23 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Ivory passages float as translucent plates over the world.
-   NOTE: no backdrop-filter anywhere on this site. Blurring a large area over
-   a live WebGL canvas re-samples the backdrop every frame and measured a 40%
-   framerate loss (61fps → 105fps once removed), tripling again on Retina.
-   Alpha alone gives the layered depth at effectively zero cost. */
+/* Ivory passages float as translucent plates over the world. The plate is a
+   content surface, so it never blurs (HIG materials: glass belongs to the
+   functional layer only). Ratios below are on the composited plate ground,
+   ivory at .92 over the world = #e1dfd4.
+   NOTE: no backdrop-filter in content anywhere on this site. Blurring a large
+   area over a live WebGL canvas re-samples the backdrop every frame and
+   measured a 40% framerate loss. Alpha alone gives the depth at no cost. */
 .is-light {
-  --text: #14261d;
-  --text-dim: rgba(20, 38, 29, 0.74);
-  --text-faint: rgba(20, 38, 29, 0.5);
+  --text: #14261d;                             /* 11.6:1 */
+  --text-dim: rgba(20, 38, 29, 0.74);          /*  6.0:1 */
+  --text-faint: rgba(20, 38, 29, 0.7);         /*  5.1:1  was .5 = 2.85, a failure */
   --line: rgba(20, 38, 29, 0.16);
-  --accent: var(--gold-deep);
+  --accent: #604c2c;                           /*  6.1:1  was gold-deep = 3.97 at 13px, a failure */
   /* --plate is the band's own presence, animated separately from its contents
      so the ground arrives before the words that sit on it. Registered below,
      and 1 by default, so the plate is solid with no JS. */
-  background-color: rgb(243 239 228 / calc(0.87 * var(--plate, 1)));
+  background-color: rgb(243 239 228 / calc(0.92 * var(--plate, 1)));
   border-block-width: 1px;
   border-block-style: solid;
   border-block-color: rgb(198 169 108 / calc(0.28 * var(--plate, 1)));
@@ -91,7 +99,7 @@
    ============================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; overflow-x: clip; }
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 
@@ -105,7 +113,7 @@ body {
   -webkit-font-smoothing: antialiased;
   font-feature-settings: 'tnum'; /* aligned figures for tonnages and specs */
   min-height: 100dvh;
-  overflow-x: clip;
+  overflow-x: clip; /* also on html above: body alone does not reliably propagate `clip` to the viewport */
 }
 
 img, video, svg { display: block; max-width: 100%; }
@@ -145,25 +153,6 @@ a { color: inherit; text-decoration: none; }
   border-radius: 1px;
 }
 
-/* film grain */
-.grain {
-  position: fixed;
-  inset: -50%;
-  width: 200%;
-  height: 200%;
-  pointer-events: none;
-  z-index: 8000;
-  opacity: 0.05;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation: grain-shift 1.2s steps(4) infinite;
-}
-@keyframes grain-shift {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(-2%, 1%); }
-  50% { transform: translate(1%, -2%); }
-  75% { transform: translate(-1%, 2%); }
-  100% { transform: translate(2%, -1%); }
-}
 
 /* ============================================================
    preloader, first load only
@@ -202,7 +191,7 @@ html.is-loading, html.is-loading body { overflow: hidden; }
 .loader__word {
   font-family: var(--font-display);
   font-size: var(--size-micro);
-  font-weight: 300;
+  font-weight: 400;
   letter-spacing: 0.34em;
   text-indent: 0.34em;
   text-transform: uppercase;
@@ -254,37 +243,37 @@ html.no-motion .split-line > .split-inner {
 /* ============================================================
    typography
    ============================================================ */
-/* Tracked-out capitals. Tracking scales INVERSELY with size: the optical gap
-   grows with the type, so large display needs less letter-spacing than the
-   micro labels, not more. Weight floors at 400 below ~1rem, since 300 goes fragile
-   at small sizes, and worse again on the dark ground. */
+/* Tracked capitals at Regular weight. HIG typography: "avoid light font
+   weights", and its own tracking table tightens as size grows, reaching zero
+   by 12pt. So the largest type carries the LEAST tracking; the 13px labels
+   carry the most. The uppercase itself is the identity, not the airiness. */
 h1, h2, h3, .display {
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 400;
   text-transform: uppercase;
   text-wrap: balance;
 }
 h1 {
   font-size: var(--size-h1);
-  letter-spacing: 0.14em;
-  line-height: 1.12;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
 }
 h2 {
   font-size: var(--size-h2);
-  letter-spacing: 0.17em;
-  line-height: 1.2;
+  letter-spacing: 0.1em;
+  line-height: 1.18;
 }
 h3 {
   font-size: var(--size-h3);
-  letter-spacing: 0.19em;
-  line-height: 1.28;
+  letter-spacing: 0.12em;
+  line-height: 1.26;
 }
-.display { letter-spacing: 0.16em; line-height: 1.18; }
+.display { letter-spacing: 0.1em; line-height: 1.16; }
 
 .lede {
   font-size: var(--size-body-lg);
   line-height: 1.58;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--text-dim);
   max-width: var(--container-text);
 }
@@ -295,7 +284,7 @@ h3 {
   font-weight: 400;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-dim); /* a label, not a control: gold is reserved for the interactive */
 }
 
 p + p { margin-top: 1em; }
@@ -340,11 +329,11 @@ p + p { margin-top: 1em; }
   align-items: center;
   gap: 0.7rem;
   padding: 0.7rem 1.35rem;
-  min-height: 44px; /* stays a legal touch target even though it reads tighter */
+  min-height: 44px; /* HIG mobile default control size */
   font-family: var(--font-display);
-  font-size: 0.8rem;
-  font-weight: 400;
-  letter-spacing: 0.13em;
+  font-size: var(--size-micro); /* 13px, the macOS default; never below */
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text);
   border: 1px solid var(--line);
@@ -388,9 +377,9 @@ p + p { margin-top: 1em; }
   align-items: center;
   gap: 0.6rem;
   font-family: var(--font-display);
-  font-size: 0.8rem;
-  font-weight: 400;
-  letter-spacing: 0.13em;
+  font-size: var(--size-micro);
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--accent);
   padding-bottom: 0.35rem;
@@ -550,11 +539,12 @@ p + p { margin-top: 1em; }
   position: absolute;
   right: calc(100% + 0.6rem);
   font-family: var(--font-display);
-  font-size: 0.62rem;
-  letter-spacing: 0.26em;
+  font-size: 0.72rem; /* 11.5px; was 9.9px, under the 11pt minimum */
+  font-weight: 500;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--gold-bright);
-  background: rgba(7, 21, 16, 0.9);
+  color: var(--ivory);
+  background: rgba(7, 21, 16, 0.94);
   padding: 0.3rem 0.55rem 0.25rem 0.65rem;
   border-radius: 2px;
   white-space: nowrap;
@@ -571,11 +561,11 @@ p + p { margin-top: 1em; }
 @media (max-width: 860px) {
   .rail { display: none; }
 }
-/* tracked uppercase pills must hold one line on small screens */
+/* tracked uppercase pills hold one line on small screens by losing tracking,
+   never size: 13px is the floor */
 @media (max-width: 480px) {
   .btn {
-    letter-spacing: 0.09em;
-    font-size: 0.75rem;
+    letter-spacing: 0.06em;
     padding: 0.65rem 1.1rem;
     white-space: nowrap;
   }
@@ -653,9 +643,34 @@ p + p { margin-top: 1em; }
     --plate: 1 !important;
     transition: none !important;
   }
-  .grain { animation: none; }
   .vein { transform: scaleY(1); }
   .seam { display: none; }
+}
+
+/* ============================================================
+   reduced transparency and increased contrast
+   HIG liquid glass checklist: "Reduce Transparency gets an opaque fallback,
+   Increase Contrast gets stronger fills and borders." The blurred nav lives
+   in Nav.astro and has its own fallback there; this covers the content layer.
+   ============================================================ */
+@media (prefers-reduced-transparency: reduce) {
+  .is-light { background-color: var(--ivory); }
+  .copy-shield::before { background: rgba(7, 21, 16, 0.9); }
+}
+@media (prefers-contrast: more) {
+  :root {
+    --text-dim: var(--ivory);
+    --text-faint: rgba(243, 239, 228, 0.9);
+    --line: rgba(198, 169, 108, 0.55);
+  }
+  .is-light {
+    --text-dim: #14261d;
+    --text-faint: rgba(20, 38, 29, 0.9);
+    --line: rgba(20, 38, 29, 0.45);
+    background-color: var(--ivory);
+  }
+  .btn, .field input, .field select, .field textarea { border-width: 2px; }
+  .copy-shield::before { background: rgba(7, 21, 16, 0.92); }
 }
 
 /* ============================================================

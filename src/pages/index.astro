@@ -49,9 +49,11 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
         Emirates, from the quarry gate to the grinding mill.
       </p>
       <div class="hero__actions" data-reveal style="--reveal-delay: 0.36s">
-        <a href="/commodities#clinker" class="btn">Cement Clinker</a>
-        <a href="/commodities#limestone" class="btn">Limestone</a>
         <a href="/contact" class="btn btn--solid">Enquire</a>
+        <span class="hero__secondary">
+          <a href="/commodities#clinker" class="btn">Cement Clinker</a>
+          <a href="/commodities#limestone" class="btn">Limestone</a>
+        </span>
       </div>
     </div>
 
@@ -277,6 +279,7 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
     gap: 1rem;
     flex-wrap: wrap;
   }
+  .hero__secondary { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
   .hero__cue {
     position: absolute;
     right: var(--gutter);
@@ -405,7 +408,7 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
     box-shadow: 0 0 12px rgba(198, 169, 108, 0.5);
   }
   .chain__name { font-size: var(--size-h3); transition: color 0.5s var(--ease-out); }
-  .chain__row.passed .chain__name { color: var(--gold-bright); }
+  .chain__row.passed .chain__name { color: var(--ivory); } /* status by brightness, not by the interactive colour */
   .chain__copy { grid-column: 3; color: var(--text-dim); max-width: 46ch; }
   .chain__lede { grid-column: 3; }
   .chain__terms {
@@ -450,7 +453,7 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
     font-weight: 400;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--accent);
+    color: var(--text-dim);
     margin-bottom: 1.1rem;
   }
   .emirates__ports {
@@ -485,6 +488,12 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
     .chapter :global(.chapter__secondary) { width: 52%; }
     .chain__row { gap: 0.6rem; }
     .hero__content { padding-block: 6.5rem 8rem; }
+    /* The primary owns the first line and the two secondaries share the next,
+       so the row reads in order of importance (HIG layout: leading side first)
+       instead of orphaning the last pill. The GROUP takes the full basis, not a
+       pill: a pill with max-width can never force a break, because max-width
+       clamps its flex base size and the next item packs beside it. */
+    .hero__actions .hero__secondary { flex-basis: 100%; }
     .emirates__grid { grid-template-columns: 1fr; }
     .emirates :global(.emirates__media) { margin-left: 0; }
     /* fuller vertical scrim so the headline owns the small screen */
