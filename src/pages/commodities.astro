@@ -1,0 +1,198 @@
+---
+import Arrow from '../components/Arrow.astro';
+import Base from '../layouts/Base.astro';
+import Media from '../components/Media.astro';
+import ContactCTA from '../components/ContactCTA.astro';
+import { commodities } from '../data/commodities.js';
+---
+
+<Base
+  title="Commodities: Cement Clinker & Limestone | Aevum"
+  description="Ordinary Portland clinker and Hajar-range limestone, supplied against defined chemistry with independent inspection. Grade sheets available on request."
+>
+  <!-- ============================== hero -->
+  <section class="page-hero" data-depth="Top" data-cam="rim">
+    <div class="container copy-shield">
+      <h1 class="page-hero__title">
+        <span class="split-line" data-reveal><span class="split-inner">Two commodities.</span></span>
+        <span class="split-line" data-reveal style="--reveal-delay: 0.1s"><span class="split-inner">One supply chain.</span></span>
+      </h1>
+      <p class="page-hero__sub lede" data-reveal style="--reveal-delay: 0.22s">
+        Everything we trade is specified in writing and delivered against that
+        specification, with independent inspection at handover.
+      </p>
+      <nav class="page-hero__jump" aria-label="Commodities on this page" data-reveal style="--reveal-delay: 0.32s">
+        {commodities.map((c) => (
+          <a href={`#${c.slug}`} class="link-line">{c.name}
+            <Arrow dir="down" />
+          </a>
+        ))}
+      </nav>
+    </div>
+  </section>
+
+  {commodities.map((c, i) => (
+    <article
+      id={c.slug}
+      class={`section commodity ${i % 2 === 1 ? 'is-light commodity--flip' : ''}`}
+      data-reveal={i % 2 === 1 ? 'plate' : undefined}
+      data-cam={i === 0 ? 'seam' : 'benchWall'}
+      data-depth={c.name}
+    >
+      <div class="container commodity__grid">
+        <!-- the sample: pinned while its certificate scrolls past -->
+        <div class="commodity__pin">
+          <div class="commodity__pin-inner">
+            <Media
+              src={c.panelImage}
+              alt={c.panelImageAlt}
+              class="commodity__media rake-media"
+              parallax="0.1"
+              ratio="4 / 5"
+              vtName={`media-${c.slug}`}
+              loading="eager"
+              data-reveal="strata"
+            />
+            <Media
+              src={c.image}
+              alt={c.imageAlt}
+              class="commodity__media-detail"
+              ratio="16 / 9"
+              data-reveal
+            />
+          </div>
+        </div>
+
+        <!-- the certificate -->
+        <div class={`commodity__doc ${i % 2 === 0 ? 'copy-shield' : ''}`}>
+          <h2 data-reveal>{c.name}</h2>
+          <p class="lede" data-reveal style="--reveal-delay: 0.08s">{c.intro}</p>
+          <p class="commodity__body" data-reveal>{c.body}</p>
+          <p class="commodity__body" data-reveal>{c.logistics}</p>
+
+          <div class="commodity__facts-block" data-reveal>
+            <h3 class="commodity__facts-title">Quality parameters</h3>
+            <p class="commodity__facts-note">
+              {c.specsNote}{' '}
+              <span class="commodity__facts-params">{c.specs.filter((s) => !s.value).map((s) => s.param).join(' · ')}.</span>
+            </p>
+            {c.specs.some((s) => s.value) && (
+              <dl class="spec-list">
+                {c.specs.filter((s) => s.value).map((s) => (
+                  <div class="spec-list__row">
+                    <dt>{s.param}</dt>
+                    <dd>{s.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </div>
+
+          <div class="commodity__facts-block" data-reveal>
+            <h3 class="commodity__facts-title">Applications</h3>
+            <ul class="apps-list">
+              {c.applications.map((a) => (
+                <li class="rake-row">{a}</li>
+              ))}
+            </ul>
+          </div>
+
+          <a href={`/contact?commodity=${c.slug}`} class="btn commodity__cta">
+            Enquire about {c.name.toLowerCase()}
+            <Arrow class="btn-arrow" />
+          </a>
+        </div>
+      </div>
+    </article>
+  ))}
+
+  <ContactCTA
+    heading="Need a grade sheet?"
+    copy="Certificates of analysis and full grade documentation come with every cargo we quote."
+  />
+</Base>
+
+<style>
+  .page-hero__jump { margin-top: 2.4rem; display: flex; gap: 2.5rem; flex-wrap: wrap; }
+
+  .commodity__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: clamp(2.5rem, 6vw, 6rem);
+    align-items: start;
+  }
+  .commodity--flip .commodity__grid > .commodity__pin { order: 2; }
+
+  /* sticky sample column */
+  .commodity__pin { align-self: stretch; }
+  .commodity__pin-inner {
+    position: sticky;
+    top: 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .commodity :global(.commodity__media) { width: 100%; }
+  .commodity :global(.commodity__media-detail) { width: 62%; margin-left: auto; }
+  .commodity--flip :global(.commodity__media-detail) { margin-left: 0; margin-right: auto; }
+
+  .commodity__doc {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+  .commodity__doc h2 { font-size: var(--size-h1); }
+  .commodity__body { color: var(--text-dim); font-size: var(--size-body-lg); max-width: 56ch; }
+
+  .commodity__facts-block {
+    width: 100%;
+    border-top: 1px solid var(--line);
+    padding-top: 1.5rem;
+    margin-top: 0.5rem;
+  }
+  .commodity__facts-title {
+    font-size: var(--size-micro);
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .commodity__facts-note {
+    font-size: var(--size-small);
+    color: var(--text-dim);
+    margin-bottom: 1.1rem;
+    max-width: 52ch;
+  }
+  .commodity__facts-params { color: var(--text); }
+  .spec-list { display: flex; flex-direction: column; }
+  .spec-list__row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-block: 0.7rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--size-small);
+  }
+  .spec-list__row dt { color: var(--text); }
+  .spec-list__row dd { color: var(--text-dim); text-align: right; max-width: 26ch; }
+  .apps-list { list-style: none; display: flex; flex-direction: column; }
+  .apps-list li {
+    padding-block: 0.7rem;
+    padding-inline: 0.2rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--size-small);
+    color: var(--text-dim);
+  }
+  .commodity__cta { margin-top: 0.8rem; }
+
+  @media (max-width: 860px) {
+    .commodity__grid { grid-template-columns: 1fr; }
+    /* words first on small screens, so an anchor jump lands on the name */
+    .commodity__grid > .commodity__pin { order: 2; }
+    .commodity__pin-inner { position: static; }
+    .commodity :global(.commodity__media-detail) { width: 70%; }
+  }
+</style>

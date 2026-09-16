@@ -1,0 +1,17 @@
+---
+// The one arrow on the site. `dir` picks right (links, buttons) or down
+// (in-page jump links).
+const { class: cls = '', dir = 'right', size = 14 } = Astro.props;
+const d = dir === 'down' ? 'M8 1v13M3 9l5 5 5-5' : 'M1 8h13M9 3l5 5-5 5';
+---
+
+<svg
+  class={cls}
+  width={size}
+  height={size}
+  viewBox="0 0 16 16"
+  fill="none"
+  aria-hidden="true"
+>
+  <path d={d} stroke="currentColor" stroke-width="1.5" />
+</svg>

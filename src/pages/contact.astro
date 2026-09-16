@@ -1,0 +1,249 @@
+---
+import Arrow from '../components/Arrow.astro';
+import Base from '../layouts/Base.astro';
+import { contact, FORM_KEY } from '../data/site.js';
+import { commodities } from '../data/commodities.js';
+---
+
+<Base
+  title="Contact | Aevum"
+  description="Enquire about cement clinker and limestone supply in the UAE. Tell us the commodity, tonnage and destination and we will reply with a firm, executable offer."
+>
+  <section class="contact page-hero" data-cam="floor">
+    <div class="container contact__grid">
+      <div class="contact__intro">
+        <h1 class="contact__title">
+          <span class="split-line" data-reveal><span class="split-inner">Start the</span></span>
+          <span class="split-line" data-reveal style="--reveal-delay: 0.12s"><span class="split-inner">conversation.</span></span>
+        </h1>
+        <p class="lede" data-reveal style="--reveal-delay: 0.26s">
+          Tell us the commodity, the tonnage and the destination. Enquiries
+          reach the trading desk directly and every one of them gets a reply.
+        </p>
+
+        <dl class="contact__details" data-reveal style="--reveal-delay: 0.36s">
+          <div class="contact__detail">
+            <dt>Email</dt>
+            <dd><a class="contact__link" href={`mailto:${contact.email}`}>{contact.email}</a></dd>
+          </div>
+          {contact.phone && (
+            <div class="contact__detail">
+              <dt>Phone</dt>
+              <dd><a class="contact__link" href={contact.phoneHref}>{contact.phone}</a></dd>
+            </div>
+          )}
+          {contact.address.length > 0 && (
+            <div class="contact__detail">
+              <dt>Office</dt>
+              <dd>{contact.address.join(', ')}</dd>
+            </div>
+          )}
+        </dl>
+      </div>
+
+      <form class="contact__form" id="enquiry-form" novalidate data-reveal style="--reveal-delay: 0.2s">
+        <div class="contact__row">
+          <div class="field">
+            <label for="f-name">Name <span aria-hidden="true">*</span></label>
+            <input id="f-name" name="name" type="text" autocomplete="name" required />
+            <p class="field-error">Please tell us your name.</p>
+          </div>
+          <div class="field">
+            <label for="f-company">Company</label>
+            <input id="f-company" name="company" type="text" autocomplete="organization" />
+          </div>
+        </div>
+        <div class="contact__row">
+          <div class="field">
+            <label for="f-email">Email <span aria-hidden="true">*</span></label>
+            <input id="f-email" name="email" type="email" autocomplete="email" required />
+            <p class="field-error">Please enter a valid email address so we can reply.</p>
+          </div>
+          <div class="field">
+            <label for="f-phone">Phone</label>
+            <input id="f-phone" name="phone" type="tel" autocomplete="tel" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-commodity">Commodity</label>
+          <div class="select-wrap">
+            <select id="f-commodity" name="commodity">
+              <option value="">Select a commodity</option>
+              {commodities.map((c) => (
+                <option value={c.slug}>{c.name}</option>
+              ))}
+              <option value="other">Something else</option>
+            </select>
+            <svg class="select-arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-message">Enquiry <span aria-hidden="true">*</span></label>
+          <textarea
+            id="f-message"
+            name="message"
+            required
+            placeholder="Commodity, approximate tonnage, destination and timing. As much as you know today."
+          ></textarea>
+          <p class="field-error">Please tell us what you need. Even a rough outline helps.</p>
+        </div>
+
+        <button type="submit" class="btn btn--solid contact__submit">
+          <span class="contact__submit-label">Send enquiry</span>
+          <Arrow class="btn-arrow" />
+        </button>
+        <p class="contact__status" id="form-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
+  <script define:vars={{ FORM_KEY, email: contact.email }}>
+    const form = document.getElementById('enquiry-form');
+    const status = document.getElementById('form-status');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const label = form.querySelector('.contact__submit-label');
+
+    // No endpoint configured yet → the button drafts an email instead; say so.
+    if (!FORM_KEY) label.textContent = 'Draft an enquiry email';
+
+    // Pre-select commodity from ?commodity= links on the Commodities page
+    const pre = new URLSearchParams(location.search).get('commodity');
+    if (pre) {
+      const sel = form.elements.commodity;
+      if ([...sel.options].some((o) => o.value === pre)) sel.value = pre;
+    }
+
+    const validate = (field) => {
+      const wrap = field.closest('.field');
+      if (!wrap || !field.required) return true;
+      const ok = field.type === 'email' ? field.checkValidity() && field.value.trim() !== '' : field.value.trim() !== '';
+      wrap.classList.toggle('has-error', !ok);
+      return ok;
+    };
+    form.querySelectorAll('input[required], textarea[required]').forEach((f) => {
+      f.addEventListener('blur', () => validate(f));
+      f.addEventListener('input', () => f.closest('.field').classList.remove('has-error'));
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fields = [...form.querySelectorAll('input[required], textarea[required]')];
+      const bad = fields.filter((f) => !validate(f));
+      if (bad.length) {
+        bad[0].focus();
+        return;
+      }
+
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      if (!FORM_KEY) {
+        // No form endpoint configured yet, so open a pre-filled email instead.
+        const body = encodeURIComponent(
+          `Name: ${data.name}\nCompany: ${data.company || 'not given'}\nEmail: ${data.email}\nPhone: ${data.phone || 'not given'}\nCommodity: ${data.commodity || 'not specified'}\n\n${data.message}`
+        );
+        location.href = `mailto:${email}?subject=${encodeURIComponent('Enquiry: ' + (data.commodity || 'general'))}&body=${body}`;
+        status.textContent = 'Your email app should open with the enquiry drafted. If it does not, write to ' + email + ' directly.';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      label.textContent = 'Sending…';
+      try {
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ access_key: FORM_KEY, subject: 'Aevum enquiry: ' + (data.commodity || 'general'), ...data }),
+        });
+        if (!res.ok) throw new Error('send failed');
+        form.reset();
+        label.textContent = 'Sent';
+        status.textContent = 'Thank you. Your enquiry is with the desk and we will come back to you shortly.';
+      } catch {
+        submitBtn.disabled = false;
+        label.textContent = 'Send enquiry';
+        status.textContent = 'That did not go through. Please retry, or write to ' + email + ' directly.';
+      }
+    });
+  </script>
+</Base>
+
+<style>
+  .contact {
+    background: radial-gradient(80% 70% at 100% 0%, rgba(198, 169, 108, 0.09), transparent 55%);
+    min-height: 100dvh;
+  }
+  .contact__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: clamp(3rem, 8vw, 8rem);
+    align-items: start;
+  }
+  .contact__title { font-size: var(--size-h1); margin-bottom: 2rem; }
+  .contact__intro .lede { max-width: 40ch; }
+
+  .contact__details {
+    margin-top: clamp(2.5rem, 6vh, 4rem);
+    display: flex;
+    flex-direction: column;
+  }
+  .contact__detail {
+    display: grid;
+    grid-template-columns: 6rem 1fr;
+    gap: 1.5rem;
+    padding-block: 1.1rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--size-small);
+  }
+  .contact__detail:last-child { border-bottom: 1px solid var(--line); }
+  .contact__detail dt {
+    color: var(--gold);
+    font-family: var(--font-display);
+    font-size: var(--size-micro);
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding-top: 0.15rem;
+  }
+  .contact__detail dd { color: var(--text-dim); }
+  .contact__link { transition: color 0.35s var(--ease-out); }
+  .contact__link:hover { color: var(--gold-bright); }
+
+  .contact__form {
+    display: flex;
+    flex-direction: column;
+    gap: 2.2rem;
+    border: 1px solid var(--line);
+    padding: clamp(1.8rem, 4vw, 3.2rem);
+    background: rgba(7, 21, 16, 0.76);
+  }
+  .contact__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+  .select-wrap { position: relative; }
+  .select-arrow {
+    position: absolute;
+    right: 0.2rem;
+    top: 50%;
+    translate: 0 -50%;
+    width: 1rem;
+    color: var(--text-dim);
+    pointer-events: none;
+  }
+  .contact__submit { align-self: flex-start; }
+  .contact__status {
+    font-size: var(--size-small);
+    color: var(--gold-bright);
+    min-height: 1.4em;
+  }
+
+  @media (max-width: 960px) {
+    .contact__grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 620px) {
+    .contact__row { grid-template-columns: 1fr; }
+  }
+</style>

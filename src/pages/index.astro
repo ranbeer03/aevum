@@ -1,0 +1,495 @@
+---
+import Arrow from '../components/Arrow.astro';
+import Base from '../layouts/Base.astro';
+import Media from '../components/Media.astro';
+import ContactCTA from '../components/ContactCTA.astro';
+import { partners } from '../data/site.js';
+
+// The page is a descent: surface (hero), limestone strata, kiln depth
+// (clinker), the cargo chain, the Emirates, then bedrock (contact).
+
+const services = [
+  {
+    name: 'Trading',
+    copy: 'Spot cargoes and term offtake, priced firmly and executed to contract.',
+  },
+  {
+    name: 'Supply Chain Management',
+    copy: 'Offtake, inspection, trucking, stockpiling and documentation, handled by a single counterparty.',
+  },
+  {
+    name: 'Inland Logistics',
+    copy: 'Tipper fleets moving cargo from the quarry gate to the grinding mill across the Emirates.',
+  },
+  {
+    name: 'Vessel Chartering',
+    copy: 'Voyage and time charters fixed through Emirates ports, covering laycan, laytime and freight.',
+  },
+];
+
+const incoterms = ['EXW', 'FOB', 'CFR', 'CIF', 'DAP', 'DDP'];
+const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
+
+// The hero rides on the live Three.js world (src/scripts/world.js).
+// Scroll-linked videos drop into any framed Media slot (see ASSET-PROMPTS.md).
+---
+
+<Base>
+  <!-- ============================== surface: hero (the world behind) -->
+  <section class="hero" data-depth="Top" data-cam="approach">
+    <div class="hero__scrim" aria-hidden="true"></div>
+
+    <div class="container hero__content">
+      <h1 class="hero__title">
+        <span class="split-line" data-reveal><span class="split-inner">The raw materials</span></span>
+        <span class="split-line" data-reveal style="--reveal-delay: 0.1s"><span class="split-inner">of cement.</span></span>
+      </h1>
+      <p class="hero__sub" data-reveal style="--reveal-delay: 0.24s">
+        Aevum FZE supplies cement clinker and limestone across the United Arab
+        Emirates, from the quarry gate to the grinding mill.
+      </p>
+      <div class="hero__actions" data-reveal style="--reveal-delay: 0.36s">
+        <a href="/commodities#clinker" class="btn">Cement Clinker</a>
+        <a href="/commodities#limestone" class="btn">Limestone</a>
+        <a href="/contact" class="btn btn--solid">Enquire</a>
+      </div>
+    </div>
+
+    <div class="hero__cue" aria-hidden="true">
+      <span class="hero__cue-line"></span>
+      <span class="hero__cue-text">Descend</span>
+    </div>
+  </section>
+
+  <!-- ============================== strata: limestone -->
+  <section id="limestone" class="section chapter" data-depth="Limestone" data-cam="rim">
+    <div class="container chapter__grid">
+      <div class="chapter__text copy-shield">
+        <h2 data-reveal>Limestone</h2>
+        <p class="lede" data-reveal style="--reveal-delay: 0.08s">
+          Quarried from the Hajar range, which is why the east coast of the
+          UAE feeds so much of the Gulf’s cement production. Cement-grade and
+          high-calcium stone, crushed and screened to the fractions you specify.
+        </p>
+        <a href="/commodities#limestone" class="link-line" data-reveal style="--reveal-delay: 0.16s">
+          Grades &amp; specifications
+          <Arrow />
+        </a>
+      </div>
+      <div class="chapter__media">
+        <a href="/commodities#limestone" class="rake-media chapter__primary-link" aria-label="Limestone grades and specifications">
+          <Media
+            src="/media/limestone-panel.jpg"
+            alt="Terraced limestone quarry face in the Hajar mountains at first light"
+            class="chapter__primary"
+            parallax="0.12"
+            ratio="4 / 5"
+            vtName="media-limestone"
+            data-reveal="strata"
+          />
+        </a>
+        <Media
+          src="/media/limestone-macro.jpg"
+          alt="Layered ivory limestone strata in close detail"
+          class="chapter__secondary"
+          pos="50% 85%"
+          parallax="0.3"
+          ratio="4 / 3"
+          data-reveal
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- The world drowns itself in fog graded to the clip's own top colour and
+       lifts toward open sky, so the frame is already that colour when the clip
+       crossfades in over it. See STOPS in world.js. -->
+  <div class="pass" data-cam="clinkerIn" aria-hidden="true"></div>
+
+  <!-- ============================== kiln depth: clinker, over clip A -->
+  <section id="clinker" class="section chapter chapter--flip" data-depth="Cement Clinker" data-cam="clinkerHold">
+    <div class="container chapter__grid">
+      <div class="chapter__text copy-shield">
+        <h2 data-reveal>Cement Clinker</h2>
+        <p class="lede" data-reveal style="--reveal-delay: 0.08s">
+          Limestone and clay sintered at 1,450&nbsp;°C into the nodules that
+          every structure begins with. We supply Ordinary Portland, low-alkali
+          and sulphate-resistant grades against defined chemistry.
+        </p>
+        <a href="/commodities#clinker" class="link-line" data-reveal style="--reveal-delay: 0.16s">
+          Grades &amp; specifications
+          <Arrow />
+        </a>
+      </div>
+      <div class="chapter__media">
+        <a href="/commodities#clinker" class="rake-media chapter__primary-link" aria-label="Cement clinker grades and specifications">
+          <Media
+            src="/media/clinker-panel.jpg"
+            alt="Stockpile of cement clinker under dusk floodlight"
+            class="chapter__primary"
+            parallax="0.12"
+            ratio="4 / 5"
+            vtName="media-clinker"
+            data-reveal="strata"
+          />
+        </a>
+        <Media
+          src="/media/clinker-macro.jpg"
+          alt="Cement clinker nodules lit by warm side light"
+          class="chapter__secondary"
+          pos="50% 20%"
+          parallax="0.3"
+          ratio="4 / 3"
+          data-reveal
+        />
+      </div>
+    </div>
+  </section>
+
+  <div class="pass" data-cam="clinkerOut" aria-hidden="true"></div>
+  <div class="pass pass--long" data-cam="vesselIn" aria-hidden="true"></div>
+  <div class="pass" data-cam="vesselBuilt" aria-hidden="true"></div>
+
+  <!-- ============================== the chain, over clip B -->
+  <section class="section chain" data-depth="Supply Chain" data-cam="vesselHold">
+    <div class="container">
+      <div class="chain__head copy-shield">
+        <h2 data-reveal>One chain, quarry to mill</h2>
+        <p class="lede chain__lede" data-reveal style="--reveal-delay: 0.08s">
+          Aevum holds every link in that chain. A delay at the crusher, the
+          weighbridge or the berth is ours to resolve.
+        </p>
+      </div>
+      <div class="chain__rows">
+        <span class="chain__line" data-draw aria-hidden="true"></span>
+        <ul class="chain__list">
+          {services.map((s) => (
+            <li class="chain__row rake-row" data-station>
+              <h3 class="chain__name">{s.name}</h3>
+              <p class="chain__copy">{s.copy}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <p class="chain__terms" data-reveal>
+        {incoterms.map((t, i) => (
+          <>
+            <span class="chain__term">{t}</span>
+            {i < incoterms.length - 1 && <span class="chain__dot" aria-hidden="true">·</span>}
+          </>
+        ))}
+        <span class="chain__terms-note">The full Incoterms range.</span>
+      </p>
+    </div>
+  </section>
+
+  <div class="pass" data-cam="vesselRun" aria-hidden="true"></div>
+  <div class="pass pass--long" data-cam="vesselOut" aria-hidden="true"></div>
+
+  <!-- ============================== the emirates -->
+  <section class="section emirates" data-depth="The Emirates" data-cam="basin">
+    <div class="container emirates__grid">
+      <div class="emirates__content copy-shield">
+        <h2 data-reveal>Grounded in the Emirates</h2>
+        <p class="lede" data-reveal style="--reveal-delay: 0.08s">
+          The Hajar range holds some of the richest limestone reserves in the
+          region. Aevum works inside the network of quarry gates, haul roads
+          and berths that has grown up around it.
+        </p>
+        <div class="emirates__ports-wrap" data-reveal>
+          <p class="emirates__ports-label">Working through</p>
+          <ul class="emirates__ports" aria-label="Ports we work through">
+            {ports.map((p, i) => (
+              <li class="emirates__port display" data-reveal style={`--reveal-delay: ${0.08 + i * 0.05}s`}>{p}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div class="rake-media">
+        <Media
+          src="/media/quarry-hajar.jpg"
+          alt="Working limestone quarry in the Hajar mountains at golden hour"
+          class="emirates__media"
+          parallax="0.14"
+          ratio="4 / 5"
+          data-reveal="strata"
+        />
+      </div>
+    </div>
+  </section>
+
+  {partners.length > 0 && (
+    <section class="section partners">
+      <div class="container">
+        <h2 data-reveal>Working alongside</h2>
+        <ul class="partners__list">
+          {partners.map((p) => (
+            <li class="partners__name display" data-reveal>{p}</li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <ContactCTA />
+</Base>
+
+<style>
+  /* A handoff spacer. It holds no content: it exists to give the camera and
+     the backdrop crossfade room to happen, which is the whole trick. */
+  .pass { height: 84vh; pointer-events: none; }
+  /* clip B swings further in brightness than clip A at both ends, so its ramps
+     get more scroll to travel over */
+  .pass--long { height: 128vh; }
+  @media (max-width: 860px) { .pass { height: 56vh; } .pass--long { height: 84vh; } }
+
+  /* -------- hero: type floating over the live world */
+  .hero {
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  .hero__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(90deg, rgba(7, 21, 16, 0.5) 0%, transparent 65%);
+  }
+  .hero__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.9rem;
+    padding-block: 7rem 10rem;
+  }
+  .hero__title { font-size: var(--size-hero); }
+  .hero__sub {
+    font-size: var(--size-body-lg);
+    color: var(--text-dim);
+    max-width: 40ch;
+  }
+  .hero__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .hero__cue {
+    position: absolute;
+    right: var(--gutter);
+    bottom: clamp(1.5rem, 5vh, 3rem);
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    color: var(--text-faint);
+  }
+  .hero__cue-line {
+    width: 1px;
+    height: 3rem;
+    background: linear-gradient(var(--gold), transparent);
+    animation: cue 2.6s var(--ease-out) infinite;
+    transform-origin: top;
+  }
+  .hero__cue-text {
+    font-size: var(--size-micro);
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+  }
+  @keyframes cue {
+    0% { transform: scaleY(0); }
+    45% { transform: scaleY(1); }
+    100% { transform: scaleY(1); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero__cue-line { animation: none; }
+  }
+
+  /* -------- commodity chapters: multi-image collage parallax */
+  .chapter__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+  }
+  .chapter--flip .chapter__grid > .chapter__text { order: 2; }
+  .chapter--flip .chapter__grid > .chapter__media { order: 1; }
+  .chapter__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.6rem;
+  }
+  .chapter__text h2 { font-size: var(--size-h1); }
+  .chapter__media {
+    position: relative;
+    padding-bottom: clamp(3rem, 8vw, 6rem);
+  }
+  .chapter__primary-link { display: block; width: min(100%, 30rem); margin-left: auto; }
+  .chapter--flip .chapter__primary-link { margin-left: 0; }
+  .chapter :global(.chapter__primary) { width: 100%; }
+  .chapter :global(.chapter__secondary) {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: min(46%, 17rem);
+    box-shadow: 0 1.5rem 3rem rgba(4, 12, 9, 0.35);
+  }
+  .chapter--flip :global(.chapter__secondary) { left: auto; right: 0; }
+  .chapter { position: relative; z-index: 2; }
+
+  /* -------- the chain: route line + stations */
+  /* The clip animates through the middle of this section, so the copy is held
+     out to either side of it. The centre column is deliberately empty: it is
+     the lane the vessel travels down, and letting text sit under it made the
+     text unreadable rather than layered. */
+  .chain__head {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 5fr);
+    gap: clamp(1rem, 2.5vw, 2.5rem);
+    margin-bottom: var(--space-block);
+    align-items: start;
+  }
+  .chain__rows { position: relative; }
+  .chain__rows::before {
+    content: "";
+    position: absolute;
+    inset: -0.5rem -1.5rem;
+    z-index: -1;
+    background: linear-gradient(90deg, rgba(7, 21, 16, 0.5), rgba(7, 21, 16, 0.2) 60%, transparent);
+    border-radius: 1.5rem;
+    pointer-events: none;
+  }
+  /* the route line rides the same seam as the page vein on wide screens */
+  .chain__line {
+    position: absolute;
+    left: 5px;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: var(--gold);
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  .chain__list { list-style: none; }
+  .chain__row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 3fr) minmax(0, 5fr);
+    gap: clamp(0.75rem, 2vw, 2rem);
+    padding: clamp(1.4rem, 2.6vw, 2.1rem) 0 clamp(1.4rem, 2.6vw, 2.1rem) clamp(1.8rem, 4vw, 3.2rem);
+    border-top: 1px solid var(--line);
+  }
+  .chain__row:last-child { border-bottom: 1px solid var(--line); }
+  /* station node: fills when the drawn line reaches it (rake-row clips at
+     overflow, so the dot sits fully inside the row box) */
+  .chain__row::before {
+    content: "";
+    position: absolute;
+    left: 1px;
+    top: calc(clamp(1.4rem, 2.6vw, 2.1rem) + 0.55em);
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    background: var(--forest-900);
+    transition: background-color 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
+  }
+  .chain__row.passed::before {
+    background: var(--gold);
+    box-shadow: 0 0 12px rgba(198, 169, 108, 0.5);
+  }
+  .chain__name { font-size: var(--size-h3); transition: color 0.5s var(--ease-out); }
+  .chain__row.passed .chain__name { color: var(--gold-bright); }
+  .chain__copy { grid-column: 3; color: var(--text-dim); max-width: 46ch; }
+  .chain__lede { grid-column: 3; }
+  .chain__terms {
+    margin-top: var(--space-block);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.85rem;
+    color: var(--text);
+  }
+  .chain__term {
+    font-family: var(--font-display);
+    font-size: clamp(1.15rem, 2.2vw, 1.7rem);
+    letter-spacing: 0.12em;
+  }
+  .chain__dot { color: var(--text-faint); }
+  .chain__terms-note { color: var(--text-dim); font-size: var(--size-small); }
+
+  /* -------- emirates */
+  .emirates__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(2.5rem, 6vw, 6rem);
+    align-items: center;
+  }
+  .emirates :global(.emirates__media) { width: min(100%, 26rem); margin-left: auto; }
+  .emirates__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    align-items: flex-start;
+  }
+  .emirates__ports-wrap {
+    width: 100%;
+    margin-top: 0.6rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.6rem;
+  }
+  .emirates__ports-label {
+    font-family: var(--font-display);
+    font-size: var(--size-micro);
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.1rem;
+  }
+  .emirates__ports {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: clamp(1.5rem, 4vw, 3.2rem);
+    row-gap: 0.7rem;
+  }
+  .emirates__port {
+    font-size: clamp(1.4rem, 3vw, 2.3rem);
+    color: var(--text-dim);
+  }
+
+  /* -------- partners */
+  .partners h2 { margin-bottom: var(--space-block); }
+  .partners__list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(2rem, 6vw, 5rem);
+  }
+  .partners__name { font-size: var(--size-h3); color: var(--text-dim); }
+
+  /* -------- responsive */
+  @media (max-width: 860px) {
+    .chapter__grid, .chain__head, .chain__row { grid-template-columns: 1fr; }
+    .chain__lede, .chain__copy { grid-column: 1; }
+    .chapter--flip .chapter__grid > .chapter__text { order: 1; }
+    .chapter--flip .chapter__grid > .chapter__media { order: 2; }
+    .chapter__primary-link { width: 100%; }
+    .chapter :global(.chapter__secondary) { width: 52%; }
+    .chain__row { gap: 0.6rem; }
+    .hero__content { padding-block: 6.5rem 8rem; }
+    .emirates__grid { grid-template-columns: 1fr; }
+    .emirates :global(.emirates__media) { margin-left: 0; }
+    /* fuller vertical scrim so the headline owns the small screen */
+    .hero__scrim {
+      background: linear-gradient(180deg, rgba(7, 21, 16, 0.45) 0%, rgba(7, 21, 16, 0.25) 55%, rgba(7, 21, 16, 0.55) 100%);
+    }
+  }
+</style>

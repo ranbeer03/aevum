@@ -1,0 +1,22 @@
+---
+// A framed image.
+//   parallax: vertical drift factor, e.g. "0.12". Omit for static.
+//   ratio:    CSS aspect-ratio, e.g. "16 / 9".
+//   pos:      object-position, to differentiate crops of a reused photo.
+//   vtName:   view-transition-name, kept for named element morphs.
+const { src, alt = '', parallax, ratio, pos, vtName, class: cls = '', loading = 'lazy', ...rest } = Astro.props;
+const style = [
+  ratio && `aspect-ratio: ${ratio};`,
+  vtName && `view-transition-name: ${vtName};`,
+].filter(Boolean).join(' ') || undefined;
+---
+
+<figure class={`media ${cls}`} data-parallax={parallax} style={style} {...rest}>
+  <img
+    src={src}
+    alt={alt}
+    loading={loading}
+    decoding="async"
+    style={pos ? `object-position: ${pos};` : undefined}
+  />
+</figure>

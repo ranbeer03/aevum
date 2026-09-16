@@ -1,0 +1,702 @@
+/* ============================================================
+   AEVUM design system v3, "the world"
+   Deep Forest Green · White Ivory · Antique Gold
+   A persistent Three.js world lives behind every page (.world);
+   sections are transparent or frosted glass over it.
+   Display: Josefin Sans 300, tracked-out uppercase (mont-fort DNA)
+   Text:    Spectral (editorial screen serif)
+   Motion:  hybrid scrub. The world moves with the scroll (both
+   directions); words reveal once and stay legible.
+   ============================================================ */
+
+:root {
+  /* -- color ------------------------------------------------ */
+  --forest-975: #071510;
+  --forest-950: #0a1b14;
+  --forest-900: #0d221a;   /* primary dark ground */
+  --forest-850: #112b21;
+  --forest-700: #1f4736;
+  --forest-line: rgba(198, 169, 108, 0.22);
+
+  --ivory: #f3efe4;
+
+  --gold: #c6a96c;
+  --gold-bright: #d8bc80;
+  --gold-deep: #77613a;
+
+  /* semantic */
+  --text: var(--ivory);
+  --text-dim: rgba(243, 239, 228, 0.72);
+  --text-faint: rgba(222, 210, 180, 0.6);
+  --line: var(--forest-line);
+  --accent: var(--gold);
+  --error: #d97b6c;
+
+  /* -- type ------------------------------------------------- */
+  --font-display: 'Albert Sans', 'Futura', 'Avenir Next', sans-serif;
+  --font-text: 'Spectral', 'Georgia', serif;
+
+  /* tracked-out uppercase reads wider, so sizes sit below the serif scale */
+  --size-hero: clamp(1.9rem, 0.9rem + 4.2vw, 4rem);
+  --size-h1: clamp(1.7rem, 1rem + 3vw, 3.3rem);
+  --size-h2: clamp(1.35rem, 0.95rem + 1.8vw, 2.3rem);
+  --size-h3: clamp(1.05rem, 0.95rem + 0.6vw, 1.35rem);
+  --size-body-lg: clamp(1.06rem, 1rem + 0.35vw, 1.25rem);
+  --size-body: 1.0625rem;
+  --size-small: 0.9375rem;
+  --size-micro: 0.8125rem;
+
+  /* -- rhythm (tightened premium) --------------------------- */
+  --space-section: clamp(4rem, 2.5rem + 5vw, 7rem);
+  --space-block: clamp(1.8rem, 1.3rem + 2.2vw, 3.2rem);
+  --gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --container: 84rem;
+  --container-text: 46rem;
+
+  /* -- motion ----------------------------------------------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Ivory passages float as translucent plates over the world.
+   NOTE: no backdrop-filter anywhere on this site. Blurring a large area over
+   a live WebGL canvas re-samples the backdrop every frame and measured a 40%
+   framerate loss (61fps → 105fps once removed), tripling again on Retina.
+   Alpha alone gives the layered depth at effectively zero cost. */
+.is-light {
+  --text: #14261d;
+  --text-dim: rgba(20, 38, 29, 0.74);
+  --text-faint: rgba(20, 38, 29, 0.5);
+  --line: rgba(20, 38, 29, 0.16);
+  --accent: var(--gold-deep);
+  /* --plate is the band's own presence, animated separately from its contents
+     so the ground arrives before the words that sit on it. Registered below,
+     and 1 by default, so the plate is solid with no JS. */
+  background-color: rgb(243 239 228 / calc(0.87 * var(--plate, 1)));
+  border-block-width: 1px;
+  border-block-style: solid;
+  border-block-color: rgb(198 169 108 / calc(0.28 * var(--plate, 1)));
+  color: var(--text);
+}
+
+/* Registered so the browser can interpolate it as a number rather than a
+   string; an unregistered custom property is not animatable. */
+@property --plate {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+/* ============================================================
+   reset
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+body {
+  background-color: var(--forest-900);
+  color: var(--text);
+  font-family: var(--font-text);
+  font-size: var(--size-body);
+  font-weight: 400;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'tnum'; /* aligned figures for tonnages and specs */
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+img, video, svg { display: block; max-width: 100%; }
+
+/* the world: one persistent WebGL scene behind everything */
+.world {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.world canvas { width: 100%; height: 100%; display: block; }
+/* The clips are texture sources now, not a layer. They stay in the document
+   because detached media does not play reliably on Safari, but they are one
+   pixel and invisible: world.js draws them inside the WebGL pass. */
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+main { position: relative; z-index: 1; }
+footer { position: relative; z-index: 1; }
+button { font: inherit; background: none; border: 0; cursor: pointer; color: inherit; }
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--gold); color: var(--forest-950); }
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+
+/* film grain */
+.grain {
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 8000;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 1.2s steps(4) infinite;
+}
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2%, 1%); }
+  50% { transform: translate(1%, -2%); }
+  75% { transform: translate(-1%, 2%); }
+  100% { transform: translate(2%, -1%); }
+}
+
+/* ============================================================
+   preloader, first load only
+   The mark is the quarry face; the gold seam fills it bench by bench as the
+   model streams in (JS quantises --p, so the rise is stepped, not liquid).
+   ============================================================ */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1.4rem;
+  background: var(--forest-900);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+}
+html.is-loading, html.is-loading body { overflow: hidden; }
+
+.loader.is-done {
+  opacity: 0;
+  transform: scale(1.03);
+  pointer-events: none;
+}
+
+.loader__mark { width: 72px; height: 72px; overflow: visible; }
+.loader__cut { fill: none; stroke: var(--gold); stroke-width: 1; opacity: 0.55; }
+.loader__seam {
+  fill: var(--gold);
+  opacity: 0.9;
+  /* the seam rises from the pit floor */
+  clip-path: inset(calc(100% - var(--p, 0) * 100%) 0 0 0);
+  transition: clip-path 0.5s var(--ease-out);
+}
+
+.loader__word {
+  font-family: var(--font-display);
+  font-size: var(--size-micro);
+  font-weight: 300;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.loader__bar {
+  width: 132px;
+  height: 1px;
+  background: rgba(198, 169, 108, 0.2);
+  overflow: hidden;
+}
+.loader__bar span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+  transition: transform 0.35s linear;
+}
+
+/* Indeterminate until the first real progress event. See motion.js. */
+.loader:not(.is-live) .loader__bar span {
+  width: 34%;
+  transform: translateX(-100%);
+  transition: none;
+  animation: loader-sweep 1.5s ease-in-out infinite;
+}
+@keyframes loader-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(294%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader, .loader__seam, .loader__bar span { transition-duration: 0.01ms; }
+  .loader:not(.is-live) .loader__bar span { animation: none; transform: none; width: 100%; opacity: 0.35; }
+}
+
+/* Set by the failsafe in Base.astro when the bundle never arrives: the page
+   has to be readable without the motion layer that normally reveals it. */
+html.no-motion [data-reveal],
+html.no-motion .split-line > .split-inner {
+  opacity: 1;
+  transform: none;
+  clip-path: none;
+  --plate: 1;
+}
+
+/* ============================================================
+   typography
+   ============================================================ */
+/* Tracked-out capitals. Tracking scales INVERSELY with size: the optical gap
+   grows with the type, so large display needs less letter-spacing than the
+   micro labels, not more. Weight floors at 400 below ~1rem, since 300 goes fragile
+   at small sizes, and worse again on the dark ground. */
+h1, h2, h3, .display {
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+h1 {
+  font-size: var(--size-h1);
+  letter-spacing: 0.14em;
+  line-height: 1.12;
+}
+h2 {
+  font-size: var(--size-h2);
+  letter-spacing: 0.17em;
+  line-height: 1.2;
+}
+h3 {
+  font-size: var(--size-h3);
+  letter-spacing: 0.19em;
+  line-height: 1.28;
+}
+.display { letter-spacing: 0.16em; line-height: 1.18; }
+
+.lede {
+  font-size: var(--size-body-lg);
+  line-height: 1.58;
+  font-weight: 300;
+  color: var(--text-dim);
+  max-width: var(--container-text);
+}
+
+.small-caps {
+  font-family: var(--font-display);
+  font-size: var(--size-micro);
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+p + p { margin-top: 1em; }
+
+/* ============================================================
+   layout
+   ============================================================ */
+.container {
+  width: min(100% - 2 * var(--gutter), var(--container));
+  margin-inline: auto;
+}
+
+.section {
+  padding-block: var(--space-section);
+  position: relative;
+}
+
+.rule { border: 0; border-top: 1px solid var(--line); }
+
+/* the opening block of an inner page, clearing the fixed nav */
+.page-hero {
+  padding-top: clamp(8rem, 20vh, 11rem);
+  padding-bottom: var(--space-section);
+  background: radial-gradient(90% 90% at 90% -10%, rgba(198, 169, 108, 0.1), transparent 55%);
+}
+.page-hero__title { font-size: var(--size-h1); }
+.page-hero__sub { margin-top: 1.8rem; max-width: 52ch; }
+
+/* privacy and terms, plain prose pages */
+.legal { min-height: 70dvh; }
+.legal h1 { margin-bottom: 2.5rem; }
+.legal__body { max-width: var(--container-text); color: var(--text-dim); font-size: var(--size-body-lg); }
+.legal__link { color: var(--gold-bright); }
+.legal__link:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+
+/* ============================================================
+   buttons and links: raking-light hover language
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 1.35rem;
+  min-height: 44px; /* stays a legal touch target even though it reads tighter */
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.4s var(--ease-out), border-color 0.4s var(--ease-out);
+  cursor: pointer;
+}
+/* raking light sweep */
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(105deg, transparent 30%, rgba(216, 188, 128, 0.35) 50%, transparent 70%);
+  transform: translateX(-101%);
+  pointer-events: none;
+}
+.btn:hover, .btn:focus-visible { border-color: var(--gold); color: var(--gold-bright); }
+.btn:hover::after, .btn:focus-visible::after {
+  transform: translateX(101%);
+  transition: transform 0.7s var(--ease-out);
+}
+
+.btn--solid {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--forest-950);
+}
+.btn--solid::after {
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 250, 235, 0.5) 50%, transparent 70%);
+}
+.btn--solid:hover, .btn--solid:focus-visible { color: var(--forest-950); border-color: var(--gold-bright); background: var(--gold-bright); }
+
+.btn .btn-arrow { width: 1em; height: 1em; transition: transform 0.45s var(--ease-out); }
+.btn:hover .btn-arrow { transform: translateX(4px); }
+
+.link-line {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding-bottom: 0.35rem;
+  cursor: pointer;
+}
+.link-line::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 100%; height: 1px;
+  background: currentColor;
+  transform: scaleX(0.32);
+  transform-origin: left;
+  transition: transform 0.5s var(--ease-out);
+}
+.link-line:hover::after, .link-line:focus-visible::after { transform: scaleX(1); }
+
+/* raking light for content rows (apply .rake-row) */
+.rake-row { position: relative; overflow: hidden; }
+.rake-row::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(198, 169, 108, 0.09) 50%, transparent 65%);
+  transform: translateX(-101%);
+  pointer-events: none;
+}
+.rake-row:hover::after {
+  transform: translateX(101%);
+  transition: transform 0.9s var(--ease-out);
+}
+
+/* ============================================================
+   media frames
+   ============================================================ */
+.media {
+  position: relative;
+  overflow: clip;
+  background: var(--forest-850);
+}
+.media > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.media[data-parallax] > img {
+  height: 118%;
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+/* raking light on image panels */
+.rake-media { position: relative; }
+.rake-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(105deg, transparent 30%, rgba(216, 188, 128, 0.16) 50%, transparent 70%);
+  transform: translateX(-101%) skewX(-4deg);
+  pointer-events: none;
+}
+.rake-media:hover::before {
+  transform: translateX(101%) skewX(-4deg);
+  transition: transform 1s var(--ease-out);
+}
+
+/* ============================================================
+   reveal primitives (one-shot; JS adds .in)
+   The hidden state is unconditional, NOT gated behind a `.js` class. Astro's
+   view transition snapshots the incoming page before any runtime class lands,
+   so a gated rule let the new page paint fully finished, then hide, then
+   animate: the content appeared twice. <noscript> below restores it.
+   ============================================================ */
+/* CSS holds the HIDDEN state of every reveal, and the final state as a
+   fallback. The entrance itself is animated by Motion in motion.js, which is
+   what lets a page arrival stagger its content as one movement. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(1.3rem);
+}
+[data-reveal].in { opacity: 1; transform: none; }
+
+/* A section's ground, revealed as its own layer. It must undo the generic
+   hidden state above: hiding the whole section would take its contents with
+   it, and they run their own staggered entrance on top of this one. */
+[data-reveal="plate"] {
+  opacity: 1;
+  transform: none;
+  --plate: 0;
+}
+[data-reveal="plate"].in { --plate: 1; }
+
+/* strata reveal starts from a VISIBLE band, so imagery is never fully hidden */
+[data-reveal="strata"] {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(24% 0 24% 0);
+}
+[data-reveal="strata"].in { clip-path: inset(0 0 0 0); }
+
+.split-line { overflow: clip; display: block; }
+.split-line > .split-inner {
+  display: block;
+  transform: translateY(110%);
+}
+[data-reveal].in .split-inner,
+.split-line.in > .split-inner { transform: translateY(0); }
+
+[data-reveal="rule"] {
+  transform: scaleX(0);
+  transform-origin: left;
+}
+[data-reveal="rule"].in { transform: scaleX(1); }
+
+/* ============================================================
+   the section rail: bench markers, and the page's table of contents
+   ============================================================ */
+.rail {
+  position: fixed;
+  right: calc(var(--gutter) / 2);
+  top: 50%;
+  translate: 0 -50%;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+/* the bar is a scaled pseudo-element, never an animated width: layout
+   properties thrash; transforms stay on the compositor */
+.rail__tick {
+  position: relative;
+  width: 2rem;
+  height: 1.1rem; /* a real touch/pointer target around a 2px mark */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0;
+}
+.rail__tick::before {
+  content: "";
+  width: 100%;
+  height: 2px;
+  background: rgba(150, 124, 74, 0.7);
+  transform: scaleX(0.6);
+  transform-origin: right;
+  transition: transform 0.4s var(--ease-out), background-color 0.4s var(--ease-out);
+}
+.rail__tick.is-active::before,
+.rail__tick:hover::before,
+.rail__tick:focus-visible::before {
+  transform: scaleX(1);
+  background: var(--gold);
+}
+.rail__label {
+  position: absolute;
+  right: calc(100% + 0.6rem);
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+  background: rgba(7, 21, 16, 0.9);
+  padding: 0.3rem 0.55rem 0.25rem 0.65rem;
+  border-radius: 2px;
+  white-space: nowrap;
+  opacity: 0;
+  translate: 0.4rem 0;
+  pointer-events: none;
+  transition: opacity 0.35s var(--ease-out), translate 0.35s var(--ease-out);
+}
+.rail__tick:hover .rail__label,
+.rail__tick:focus-visible .rail__label {
+  opacity: 1;
+  translate: 0 0;
+}
+@media (max-width: 860px) {
+  .rail { display: none; }
+}
+/* tracked uppercase pills must hold one line on small screens */
+@media (max-width: 480px) {
+  .btn {
+    letter-spacing: 0.09em;
+    font-size: 0.75rem;
+    padding: 0.65rem 1.1rem;
+    white-space: nowrap;
+  }
+}
+
+/* ============================================================
+   view transitions: named morphs, plus the reduced-motion off-switch
+   ============================================================ */
+/* No crossfade. motion.js animates the outgoing page out before the swap and
+   staggers the incoming page in after it, and the camera flies between the two
+   pages' stops in between. Astro's own root animation would run on top of that
+   and read as the content appearing twice. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* ============================================================
+   forms
+   ============================================================ */
+.field { position: relative; }
+.field label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--size-micro);
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.6rem;
+}
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  font: inherit;
+  padding: 0.7rem 0 0.85rem;
+  border-radius: 0;
+  transition: border-color 0.35s var(--ease-out);
+  min-height: 44px;
+}
+.field select { cursor: pointer; appearance: none; }
+.field select option { color: #14261d; background: var(--ivory); }
+.field textarea { resize: vertical; min-height: 7rem; }
+.field input::placeholder, .field textarea::placeholder { color: var(--text-faint); }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-bottom-color: var(--gold);
+}
+.field .field-error {
+  display: none;
+  font-size: var(--size-micro);
+  color: var(--error);
+  margin-top: 0.5rem;
+}
+.field.has-error input, .field.has-error textarea, .field.has-error select {
+  border-bottom-color: var(--error);
+}
+.field.has-error .field-error { display: block; }
+
+/* ============================================================
+   reduced motion: the world holds still
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  .split-line > .split-inner {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    --plate: 1 !important;
+    transition: none !important;
+  }
+  .grain { animation: none; }
+  .vein { transform: scaleY(1); }
+  .seam { display: none; }
+}
+
+/* ============================================================
+   utilities
+   ============================================================ */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* the skip link surfaces for keyboard users */
+a.visually-hidden:focus-visible {
+  position: fixed !important;
+  top: 1rem;
+  left: 1rem;
+  width: auto; height: auto;
+  clip-path: none;
+  z-index: 10000;
+  background: var(--forest-975);
+  color: var(--gold-bright);
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  padding: 0.7rem 1.4rem;
+  font-family: var(--font-display);
+  font-size: var(--size-micro);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* soft local scrim so ivory copy never fights the world's rim-light */
+.copy-shield {
+  position: relative;
+}
+.copy-shield::before {
+  content: "";
+  position: absolute;
+  inset: -1.5rem -2rem;
+  z-index: -1;
+  background: radial-gradient(90% 100% at 40% 50%, rgba(7, 21, 16, 0.55), rgba(7, 21, 16, 0.18) 70%, transparent);
+  border-radius: 2rem;
+  pointer-events: none;
+}

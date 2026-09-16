@@ -1,0 +1,111 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '@fontsource/albert-sans/300.css';
+import '@fontsource/albert-sans/400.css';
+import '@fontsource/spectral/300.css';
+import '@fontsource/spectral/400.css';
+import '@fontsource/spectral/400-italic.css';
+import '../styles/global.css';
+import displayWoff2 from '@fontsource/albert-sans/files/albert-sans-latin-300-normal.woff2?url';
+import spectralWoff2 from '@fontsource/spectral/files/spectral-latin-400-normal.woff2?url';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site.js';
+
+// The camera overlay is imported dynamically and only in dev, so a production
+// build never sees the component and cannot emit its script or pull
+// OrbitControls in. A static import plus a render-time guard still bundled
+// both.
+const CamDev = import.meta.env.DEV
+  ? (await import('../components/CamDev.astro')).default
+  : null;
+
+const {
+  title = `${site.name} | Cement Clinker & Limestone Trading, UAE`,
+  description = site.description,
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, site.domain).href;
+---
+
+<!doctype html>
+<html lang="en" class="is-loading">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href={displayWoff2} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={spectralWoff2} as="font" type="font/woff2" crossorigin />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL('/media/og.jpg', site.domain).href} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0d221a" />
+    <ClientRouter />
+    <noscript>
+      <style>
+        [data-reveal], .split-line > .split-inner {
+          opacity: 1 !important;
+          transform: none !important;
+          clip-path: none !important;
+          --plate: 1 !important;
+        }
+        .loader { display: none !important; }
+        html.is-loading, html.is-loading body { overflow: auto !important; }
+      </style>
+    </noscript>
+    <script is:inline>
+      // Failsafe, independent of the bundle on purpose: if motion.js never
+      // boots (a bad chunk, or a connection that stalls), the page must not stay
+      // behind the loading mark. `no-motion` also un-hides the reveal targets,
+      // which the bundle would otherwise have been the one to show.
+      setTimeout(() => {
+        document.documentElement.classList.add('no-motion');
+        document.documentElement.classList.remove('is-loading');
+        document.getElementById('loader')?.remove();
+      }, 10000);
+    </script>
+  </head>
+  <body>
+    <!-- Design contract (thesis, world, story, first viewport): DESIGN.md -->
+    <a class="visually-hidden" href="#main">Skip to content</a>
+    <!-- First load only. The seam fills the mark bench by bench as the quarry
+         model streams in; the page and the world are revealed together. -->
+    <div class="loader" id="loader" role="status">
+      <svg class="loader__mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path class="loader__seam" d="M16 3 29 29H3L16 3Z" />
+        <path class="loader__cut" d="M16 3 29 29H3L16 3Z" />
+        <path class="loader__cut" d="M9.5 21.5h13" />
+      </svg>
+      <p class="loader__word" aria-hidden="true">Aevum</p>
+      <div class="loader__bar" aria-hidden="true"><span></span></div>
+      <!-- the live region announces this, not the wordmark above it -->
+      <span class="visually-hidden">Loading</span>
+    </div>
+    <div class="world" aria-hidden="true" transition:persist="world">
+      <canvas id="world-canvas"></canvas>
+    </div>
+    <!-- Backdrop clips. Texture sources only: world.js draws them inside the
+         WebGL pass, so the handoff is a blend in one canvas rather than a
+         second full-screen layer over it. Skipped on the devices that skip
+         the model. -->
+    <div class="backdrop" aria-hidden="true" transition:persist="backdrop">
+      <video id="clip-clinker" class="backdrop__clip" muted playsinline preload="none" src="/media/video/clip-clinker.mp4"></video>
+      <video id="clip-vessel" class="backdrop__clip" muted playsinline preload="none" src="/media/video/clip-vessel.mp4"></video>
+    </div>
+    <Nav transition:persist="site-nav" />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <nav class="rail" id="depth-rail" aria-label="Sections"></nav>
+    <div class="grain" aria-hidden="true" transition:persist="grain"></div>
+    <script src="../scripts/motion.js"></script>
+    {CamDev && <CamDev />}
+  </body>
+</html>

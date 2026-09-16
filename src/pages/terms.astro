@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro';
+import { site, contact } from '../data/site.js';
+---
+
+<Base title="Terms of Use | Aevum" description="Terms of use for aevumfze.com.">
+  <section class="legal page-hero" data-cam="spiral">
+    <div class="container">
+      <h1 data-reveal>Terms of Use</h1>
+      <!-- TODO(launch): replace with the terms text from Dhanesh. -->
+      <div class="legal__body" data-reveal style="--reveal-delay: 0.1s">
+        <p>
+          The full terms of use for this website are being finalised and will
+          be published here shortly.
+        </p>
+        <p>
+          Until then: the content of this site is provided by
+          {site.legalName} for general information only and does not
+          constitute an offer capable of acceptance. All trades are concluded
+          exclusively under written contracts agreed between the parties.
+        </p>
+        <p>
+          Questions? Write to
+          <a class="legal__link" href={`mailto:${contact.email}`}>{contact.email}</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>
+

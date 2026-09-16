@@ -1,0 +1,156 @@
+---
+import Arrow from '../components/Arrow.astro';
+import Base from '../layouts/Base.astro';
+import Media from '../components/Media.astro';
+import ContactCTA from '../components/ContactCTA.astro';
+
+const pillars = [
+  {
+    name: 'Focus',
+    copy: 'Two commodities rather than twenty. We know their chemistry, the quarries they come from and what it takes to move them.',
+  },
+  {
+    name: 'Execution',
+    copy: 'Specification, tonnage, laycan and documentation, delivered on the terms contracted.',
+  },
+  {
+    name: 'Relationships',
+    copy: 'Bulk trade runs on trust built cargo by cargo. We intend to be trading with the same counterparties in twenty years.',
+  },
+];
+---
+
+<Base
+  title="Who We Are | Aevum"
+  description="Aevum FZE is a trading company registered in the United Arab Emirates, dealing in cement clinker and limestone with logistics handled in house."
+>
+  <!-- ============================== hero -->
+  <section class="page-hero" data-depth="Top" data-cam="basin">
+    <div class="container">
+      <h1 class="page-hero__title">
+        <span class="split-line" data-reveal><span class="split-inner">Named for</span></span>
+        <span class="split-line" data-reveal style="--reveal-delay: 0.12s"><span class="split-inner">the long term.</span></span>
+      </h1>
+      <p class="page-hero__sub lede" data-reveal style="--reveal-delay: 0.26s">
+        <em>Aevum</em> is Latin for an age, or a span of time without end. We
+        chose it for a business built on stone.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================== who we are -->
+  <section class="section is-light who" data-reveal="plate" data-depth="Who We Are" data-cam="rim">
+    <div class="container who__grid">
+      <div class="who__text">
+        <h2 data-reveal>A specialist, by design</h2>
+        <div class="who__copy" data-reveal style="--reveal-delay: 0.1s">
+          <p>
+            Aevum FZE is a trading company registered in the United Arab
+            Emirates. We buy and sell cement clinker and limestone, and we
+            manage the supply chains that move them.
+          </p>
+          <p>
+            We work at the quarries, clinker lines and bulk terminals of the
+            Emirates, for producers and buyers who need cargo on specification
+            and on schedule without coordinating several intermediaries to get
+            it.
+          </p>
+        </div>
+      </div>
+      <div class="who__media-col">
+        <Media
+          src="/media/limestone-strata.jpg"
+          alt="A cross-section of limestone strata, layer upon layer in ivory and grey"
+          class="who__media"
+          parallax="0.14"
+          data-reveal="strata"
+        />
+        <p class="who__caption" data-reveal>Limestone in section. Each band is a separate period of deposition.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== how we work -->
+  <section class="section pillars" data-depth="How We Work" data-cam="benchWall">
+    <div class="container">
+      <h2 data-reveal>How we work</h2>
+      <ul class="pillars__list copy-shield">
+        {pillars.map((p, i) => (
+          <li class="pillars__row" data-reveal style={`--reveal-delay: ${i * 0.08}s`}>
+            <h3 class="pillars__name">{p.name}</h3>
+            <p class="pillars__copy">{p.copy}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================== what we trade -->
+  <section class="section is-light trade" data-reveal="plate" data-depth="What We Trade" data-cam="spiral">
+    <div class="container trade__grid">
+      <h2 data-reveal>What we trade</h2>
+      <div class="trade__body">
+        <p class="lede" data-reveal style="--reveal-delay: 0.1s">
+          Cement clinker and limestone, as spot cargoes and as term offtake.
+          Contracts run across the full Incoterms range, with inland logistics
+          and vessel chartering handled in house.
+        </p>
+        <a href="/commodities" class="link-line" data-reveal style="--reveal-delay: 0.2s">
+          View the commodities
+          <Arrow />
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <ContactCTA
+    heading="Talk to the desk"
+    copy="Tell us the commodity, the tonnage and where it needs to go."
+  />
+</Base>
+
+<style>
+  .page-hero__sub em { color: var(--gold-bright); font-style: italic; }
+
+  .who__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    gap: clamp(2.5rem, 6vw, 6rem);
+    align-items: center;
+  }
+  .who h2 { margin-bottom: 2.2rem; max-width: 14ch; }
+  .who__copy { max-width: 58ch; }
+  .who__copy p + p { margin-top: 1.3em; }
+  .who :global(.who__media) { aspect-ratio: 3 / 4; }
+  .who__caption {
+    margin-top: 1.1rem;
+    font-size: var(--size-micro);
+    color: var(--text-faint);
+    max-width: 40ch;
+  }
+
+  .pillars h2 { margin-bottom: var(--space-block); }
+  .pillars__list { list-style: none; }
+  .pillars__row {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: clamp(1.5rem, 4vw, 4rem);
+    padding-block: clamp(1.8rem, 3.5vw, 2.8rem);
+    border-top: 1px solid var(--line);
+  }
+  .pillars__row:last-child { border-bottom: 1px solid var(--line); }
+  .pillars__name { font-size: var(--size-h3); }
+  .pillars__copy { color: var(--text-dim); max-width: 58ch; font-size: var(--size-body-lg); }
+
+  .trade__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: start;
+  }
+  .trade__body { display: flex; flex-direction: column; gap: 2rem; align-items: flex-start; }
+
+  @media (max-width: 860px) {
+    .who__grid, .pillars__row, .trade__grid { grid-template-columns: 1fr; }
+  }
+</style>

@@ -1,0 +1,79 @@
+---
+import Arrow from './Arrow.astro';
+// Full-width closing band. Every page ends here with one primary action,
+// riding translucently over the world's banked-ember bedrock.
+import { contact } from '../data/site.js';
+const {
+  heading = 'Ready to move?',
+  copy = 'Tell us the commodity, the tonnage and the destination. We will come back with a firm, executable offer.',
+} = Astro.props;
+---
+
+<section class="cta" data-depth="Enquire" data-cam="floor">
+  <div class="container cta__inner">
+    <hr class="rule cta__rule" data-reveal="rule" />
+    <div class="cta__grid">
+      <div class="cta__main">
+        <h2 class="cta__heading" data-reveal>{heading}</h2>
+        <p class="cta__copy" data-reveal style="--reveal-delay: 0.08s">{copy}</p>
+        <a href="/contact" class="btn btn--solid" data-reveal style="--reveal-delay: 0.16s">
+          Start the conversation
+          <Arrow class="btn-arrow" />
+        </a>
+      </div>
+      <div class="cta__aside" data-reveal style="--reveal-delay: 0.2s">
+        <p class="small-caps">Or write directly</p>
+        <a class="cta__mail" href={`mailto:${contact.email}`}>{contact.email}</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta {
+    padding-block: clamp(4.5rem, 3rem + 6vw, 8rem);
+    background:
+      radial-gradient(120% 140% at 85% 110%, rgba(198, 169, 108, 0.1), transparent 55%),
+      rgba(7, 21, 16, 0.5);
+  }
+  .cta__rule {
+    width: 100%;
+    border-top-color: var(--forest-line);
+    margin-bottom: clamp(2rem, 4vw, 3.2rem);
+  }
+  .cta__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: end;
+  }
+  .cta__main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2rem;
+  }
+  .cta__heading { font-size: var(--size-h1); max-width: 18ch; }
+  .cta__copy {
+    font-size: var(--size-body-lg);
+    color: var(--text-dim);
+    max-width: 46ch;
+  }
+  .cta__aside {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    align-items: flex-start;
+    padding-bottom: 0.4rem;
+  }
+  .cta__mail {
+    color: var(--text-dim);
+    font-size: var(--size-body-lg);
+    transition: color 0.35s var(--ease-out);
+  }
+  .cta__mail:hover { color: var(--gold-bright); }
+
+  @media (max-width: 860px) {
+    .cta__grid { grid-template-columns: 1fr; align-items: start; }
+  }
+</style>

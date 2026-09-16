@@ -1,0 +1,24 @@
+{
+  "name": "aevum",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "dev:camera": "astro dev --open \"/?cam=1\""
+  },
+  "dependencies": {
+    "@fontsource/albert-sans": "^5.3.0",
+    "@fontsource/spectral": "^5.3.0",
+    "astro": "^5.7.0",
+    "gsap": "^3.12.7",
+    "lenis": "^1.2.3",
+    "motion": "^13.1.1",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.62.1"
+  }
+}

@@ -1,0 +1,211 @@
+---
+// DEV-ONLY camera tuner, overlaid on the real site. Base.astro includes it only
+// under `import.meta.env.DEV`, and it only wakes up for `?cam=1`, so normal
+// `npm run dev` is untouched. `npm run dev:camera` opens it.
+//
+// Take control, frame a section by hand, save it, release. Saving writes the
+// numbers back into STOPS in src/scripts/world.js through the dev middleware in
+// dev/cam-writer.mjs, so there is no copy-paste step and no second source of
+// truth. Releasing hands the camera back to the scroll, which then eases to the
+// value you just saved.
+//
+// To remove: delete this file, its include in Base.astro, dev/cam-writer.mjs,
+// the plugin line in astro.config.mjs, the dev:camera script, and
+// `nearStop`/`small`/`setStop`/`manual` on the World API.
+---
+
+<div id="camdev-grabber" hidden aria-hidden="true"></div>
+<div id="camdev" hidden>
+  <div class="camdev__bar">
+    <button id="camdev-grab" class="camdev__go">Take control</button>
+    <span id="camdev-stop" class="camdev__stop">...</span>
+    <span id="camdev-bp" class="camdev__bp"></span>
+    <button id="camdev-save" disabled>Save stop</button>
+    <button id="camdev-reset" disabled>Revert view</button>
+    <span id="camdev-msg" class="camdev__msg"></span>
+  </div>
+  <pre id="camdev-read" class="camdev__read"></pre>
+</div>
+
+<style>
+  /* The world canvas sits UNDER the content (main is z-index 1), so drags
+     never reached it. While control is live this surface sits above everything
+     except the panel and is what OrbitControls listens on. */
+  #camdev-grabber {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    cursor: grab;
+  }
+  #camdev-grabber[hidden] { display: none; }
+  #camdev-grabber:active { cursor: grabbing; }
+
+  #camdev {
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    translate: -50% 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: min(96vw, 62rem);
+    font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: #eee8d8;
+  }
+  #camdev[hidden] { display: none; }
+  .camdev__bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    background: rgba(6, 16, 11, 0.94);
+    border: 1px solid rgba(198, 169, 108, 0.34);
+    border-radius: 4px;
+  }
+  #camdev button {
+    font: inherit;
+    color: #eee8d8;
+    background: rgba(198, 169, 108, 0.12);
+    border: 1px solid rgba(198, 169, 108, 0.36);
+    border-radius: 2px;
+    padding: 4px 9px;
+    cursor: pointer;
+  }
+  #camdev button:hover:not(:disabled) { background: rgba(198, 169, 108, 0.26); }
+  #camdev button:disabled { opacity: 0.4; cursor: default; }
+  #camdev button.camdev__go { background: #c6a96c; color: #06100b; border-color: #c6a96c; }
+  #camdev button.is-live { background: #d97b6c; border-color: #d97b6c; color: #100704; }
+  .camdev__stop { color: #c6a96c; min-width: 8rem; }
+  .camdev__bp { color: #8b9a8d; }
+  .camdev__msg { color: #9fae9f; flex: 1; text-align: right; }
+  .camdev__read {
+    margin: 0;
+    padding: 7px 10px;
+    background: rgba(0, 0, 0, 0.62);
+    border: 1px solid rgba(198, 169, 108, 0.2);
+    border-radius: 3px;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+</style>
+
+<script>
+  import { World } from '../scripts/world.js';
+
+  if (new URLSearchParams(location.search).has('cam')) {
+    const root = document.getElementById('camdev');
+    const el = (id) => document.getElementById('camdev-' + id);
+    const grab = el('grab'), save = el('save'), reset = el('reset');
+    const stopLabel = el('stop'), bp = el('bp'), msg = el('msg'), read = el('read');
+    root.hidden = false;
+
+    const grabber = document.getElementById('camdev-grabber');
+    let controls = null;
+    let live = false;
+    let editing = null;
+
+    const v3 = (v) => `[${v.x.toFixed(1)}, ${v.y.toFixed(1)}, ${v.z.toFixed(1)}]`;
+    const say = (t, warn) => { msg.textContent = t; msg.style.color = warn ? '#d97b6c' : '#9fae9f'; };
+
+    async function attach() {
+      if (controls) return controls;
+      const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js');
+      controls = new OrbitControls(World.camera, grabber);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.minDistance = 2;
+      controls.maxDistance = 320;
+      return controls;
+    }
+
+    async function takeControl() {
+      editing = World.nearStop;
+      const s = World.stops[editing];
+      const src = (World.small && s.sm) ? { ...s, ...s.sm } : s;
+      await attach();
+      World.manual(true);
+      World.camera.position.set(...src.pos);
+      controls.target.set(...src.look);
+      controls.enabled = true;
+      grabber.hidden = false;
+      live = true;
+      grab.textContent = 'Release to scroll';
+      grab.classList.add('is-live');
+      save.disabled = reset.disabled = false;
+      say('drag to orbit, right-drag to pan, wheel to zoom');
+    }
+
+    function release() {
+      live = false;
+      World.manual(false);
+      grabber.hidden = true;
+      if (controls) controls.enabled = false;
+      grab.textContent = 'Take control';
+      grab.classList.remove('is-live');
+      save.disabled = reset.disabled = true;
+      // the damp eases from wherever the camera was left back onto the stop
+      World.flight();
+      say('scroll is driving again');
+    }
+
+    grab.addEventListener('click', () => (live ? release() : takeControl()));
+
+    reset.addEventListener('click', () => {
+      const s = World.stops[editing];
+      const src = (World.small && s.sm) ? { ...s, ...s.sm } : s;
+      World.camera.position.set(...src.pos);
+      controls.target.set(...src.look);
+      say(`${editing} back to its saved view`);
+    });
+
+    save.addEventListener('click', async () => {
+      const pos = World.camera.position.toArray().map((n) => +n.toFixed(1));
+      const look = controls.target.toArray().map((n) => +n.toFixed(1));
+      const forSmall = World.small;
+      save.disabled = true;
+      say('saving…');
+      try {
+        const r = await fetch('/__cam', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ name: editing, pos, look, small: forSmall }),
+        });
+        const j = await r.json();
+        if (!j.ok) throw new Error(j.error);
+        // apply in memory too, so releasing eases to the new value rather than
+        // waiting on the module reload
+        World.setStop(editing, { pos, look }, forSmall);
+        say(`saved ${editing}${forSmall ? '.sm' : ''} to world.js`);
+      } catch (e) {
+        say(e.message, true);
+      } finally {
+        save.disabled = !live;
+      }
+    });
+
+    addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'c' || e.key === 'C') grab.click();
+      if ((e.key === 's' || e.key === 'S') && live) { e.preventDefault(); save.click(); }
+    });
+
+    (function tick() {
+      requestAnimationFrame(tick);
+      if (!World.ready) return;
+      if (live && controls) {
+        controls.update();
+        World.camera.lookAt(controls.target);
+      } else {
+        editing = World.nearStop;
+      }
+      bp.textContent = World.small ? 'sm (phone framing)' : 'desktop';
+      stopLabel.textContent = editing || '...';
+      const t = live ? controls.target : World.lookAt;
+      read.textContent =
+        `${editing}: { pos: ${v3(World.camera.position)}, look: ${v3(t)} }`
+        + (live ? '' : '   (read only, take control to edit)');
+    })();
+  }
+</script>

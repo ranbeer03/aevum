@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import { site, contact } from '../data/site.js';
+---
+
+<Base title="Privacy Policy | Aevum" description="Privacy policy for aevumfze.com.">
+  <section class="legal page-hero" data-cam="spiral">
+    <div class="container">
+      <h1 data-reveal>Privacy Policy</h1>
+      <!-- TODO(launch): replace with the policy text from Dhanesh. -->
+      <div class="legal__body" data-reveal style="--reveal-delay: 0.1s">
+        <p>
+          {site.legalName} respects the privacy of everyone who visits this
+          website. The full privacy policy is being finalised and will be
+          published here shortly.
+        </p>
+        <p>
+          Until then: information submitted through our enquiry form is used
+          solely to respond to your enquiry, is sent directly to our trading
+          desk by email, and is not shared with third parties or used for
+          marketing. This site sets no advertising or tracking cookies.
+        </p>
+        <p>
+          Questions in the meantime? Write to
+          <a class="legal__link" href={`mailto:${contact.email}`}>{contact.email}</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>
+
