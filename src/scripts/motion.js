@@ -8,15 +8,20 @@
 // this module tells it which camera stop each page and section wants.
 
 import Lenis from 'lenis';
-import { animate } from 'motion';
+import { animate, stagger } from 'motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText } from 'gsap/SplitText';
 import { World } from './world.js';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, SplitText);
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const EASE = [0.16, 1, 0.3, 1]; // the --ease-out curve, in Motion's terms
+// Copy settles on a rounder curve. The exponential one above puts nine tenths
+// of a move into its first fifth, which on a 21px rise read as a pop; measured
+// at 91% done after 218ms of a 620ms reveal.
+const EASE_COPY = [0.33, 1, 0.68, 1];
 let lenis = null;
 let revealIO = null;
 let navBound = false;
@@ -112,20 +117,20 @@ const shown = (() => {
 // CSS holds the hidden state of every reveal so the page is correct before
 // this script runs and if it never does. Motion drives the entrance, which is
 // what lets a page change stagger its content instead of flashing it in.
-// The element that actually moves, and where it moves to, per reveal variant.
+// The element that actually moves, where it moves to, and how, per variant.
 function shownState(el) {
   const kind = el.dataset.reveal;
   if (el.classList.contains('split-line')) {
-    return [el.querySelector('.split-inner') || el, { transform: 'translateY(0%)' }, 0.9];
+    return [el.querySelector('.split-inner') || el, { transform: 'translateY(0%)' }, 0.9, EASE];
   }
   // a section's ground fades up as its own layer, so the band arrives rather
   // than snapping in behind the words that sit on it
-  if (kind === 'plate') return [el, { '--plate': 1 }, 0.8];
-  if (kind === 'strata') return [el, { opacity: 1, clipPath: 'inset(0% 0 0 0)' }, 0.95];
-  if (kind === 'rule') return [el, { opacity: 1, transform: 'scaleX(1)' }, 1.1];
+  if (kind === 'plate') return [el, { '--plate': 1 }, 0.8, EASE];
+  if (kind === 'strata') return [el, { opacity: 1, clipPath: 'inset(0% 0 0 0)' }, 1.1, EASE];
+  if (kind === 'rule') return [el, { opacity: 1, transform: 'scaleX(1)' }, 1.1, EASE];
   // translateY(0px), never `none`: Motion interpolates the target numerically,
   // and `none` resolves to a zero matrix that collapses the element outright.
-  return [el, { opacity: 1, transform: 'translateY(0px)' }, 0.62];
+  return [el, { opacity: 1, transform: 'translateY(0px)', filter: 'blur(0px)' }, 1.0, EASE_COPY];
 }
 
 // Play one element's entrance. `delay` staggers a group on page arrival.
@@ -134,13 +139,42 @@ function shownState(el) {
 function reveal(el, delay = 0) {
   if (el.dataset.shown) return;
   el.dataset.shown = '1';
-  const [target, to, duration] = shownState(el);
   // An authored --reveal-delay wins over the generic cascade, so a hero can
   // still time its own lines. Read off the inline style, not the computed
   // one, to avoid forcing a style flush per element.
   const authored = parseFloat(el.style.getPropertyValue('--reveal-delay'));
-  animate(target, to, { duration, delay: authored >= 0 ? authored : delay, ease: EASE })
-    .finished.then(() => el.classList.add('in'));
+  const at = authored >= 0 ? authored : delay;
+  const done = () => el.classList.add('in');
+
+  // Headings rise line by line out of a clipped box: the hero's cut, applied to
+  // every heading without hand-splitting them, since where a line breaks
+  // depends on the viewport. Split at reveal time, when the fonts are in, and
+  // reverted once shown so a resize afterwards rewraps plain text.
+  if (!el.dataset.reveal && el.matches('h1, h2, h3')) {
+    const split = new SplitText(el, { type: 'lines', mask: 'lines', linesClass: 'line' });
+    // The lines take the hidden state in the same synchronous step the heading
+    // gives it up, so no frame can paint the finished heading before the
+    // animation has claimed it.
+    for (const line of split.lines) line.style.transform = 'translateY(110%)';
+    el.style.cssText += ';opacity:1;transform:none;filter:none';
+    animate(split.lines, { transform: 'translateY(0%)' },
+      { duration: 1.05, delay: stagger(0.1, { startDelay: at }), ease: EASE })
+      .finished.then(() => { done(); split.revert(); });
+    return;
+  }
+
+  // A chain row is laid down left to right, the way the route beside it
+  // draws: its name, then its copy. The children carry the clip, not the row,
+  // which is the observer's target (see the CSS note).
+  if (el.dataset.reveal === 'row') {
+    animate([...el.children], { clipPath: 'inset(0 0% 0 0)' },
+      { duration: 0.9, delay: stagger(0.08, { startDelay: at }), ease: EASE })
+      .finished.then(done);
+    return;
+  }
+
+  const [target, to, duration, ease] = shownState(el);
+  animate(target, to, { duration, delay: at, ease }).finished.then(done);
 }
 
 // Only the page's own content. The nav is persisted across navigations and its
@@ -177,7 +211,7 @@ function initReveals() {
         revealIO.unobserve(entry.target);
       }
     },
-    { rootMargin: '0px 0px -8% 0px', threshold: 0.05 }
+    { rootMargin: '0px 0px -12% 0px', threshold: 0.05 }
   );
   below.forEach((el) => revealIO.observe(el));
 }
@@ -267,7 +301,31 @@ function initScrub() {
       onLeaveBack: () => row.classList.remove('passed'),
     });
   });
+
+  // Content recedes as it leaves through the top, the reverse of its arrival,
+  // scrubbed so scrolling back brings it straight back. On the wrapper rather
+  // than the revealed children: Motion owns their transforms, and two engines
+  // writing one transform fight. Opacity and translate only, since this runs
+  // on every scroll frame and a blur would re-rasterise the block each time.
+  document.querySelectorAll('[data-exit]').forEach((el) => {
+    gsap.to(el, {
+      opacity: 0,
+      y: -44,
+      ease: 'none',
+      scrollTrigger: { trigger: el, start: 'bottom 40%', end: 'bottom -4%', scrub: 0.6 },
+    });
+  });
 }
+
+// The hover light follows the pointer. One delegated listener; the CSS reads
+// --mx/--my off the element under it.
+document.addEventListener('pointermove', (e) => {
+  const el = e.target.closest?.('.rake-media, .rake-row');
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  el.style.setProperty('--mx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`);
+  el.style.setProperty('--my', `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`);
+}, { passive: true });
 
 /* -------------------------------------------------------------- the world */
 // Every [data-cam] section is a camera anchor at the scroll offset where it

@@ -233,10 +233,12 @@ html.is-loading, html.is-loading body { overflow: hidden; }
 /* Set by the failsafe in Base.astro when the bundle never arrives: the page
    has to be readable without the motion layer that normally reveals it. */
 html.no-motion [data-reveal],
+html.no-motion [data-reveal="row"] > *,
 html.no-motion .split-line > .split-inner {
   opacity: 1;
   transform: none;
   clip-path: none;
+  filter: none;
   --plate: 1;
 }
 
@@ -397,20 +399,22 @@ p + p { margin-top: 1em; }
 }
 .link-line:hover::after, .link-line:focus-visible::after { transform: scaleX(1); }
 
-/* raking light for content rows (apply .rake-row) */
+/* Raking light that follows the pointer: motion.js writes --mx/--my on the
+   element under it. It used to be a one-way sweep that ran on hover and
+   snapped back on leave, so crossing from one frame to the next, or leaving
+   mid-sweep, cut the light off dead. A light at the pointer has no start and
+   no end to snap between; it only brightens and dims. */
 .rake-row { position: relative; overflow: hidden; }
 .rake-row::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 35%, rgba(198, 169, 108, 0.09) 50%, transparent 65%);
-  transform: translateX(-101%);
+  background: radial-gradient(24rem 12rem at var(--mx, 50%) var(--my, 50%), rgba(216, 188, 128, 0.13), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s var(--ease-out);
   pointer-events: none;
 }
-.rake-row:hover::after {
-  transform: translateX(101%);
-  transition: transform 0.9s var(--ease-out);
-}
+.rake-row:hover::after { opacity: 1; }
 
 /* ============================================================
    media frames
@@ -432,20 +436,21 @@ p + p { margin-top: 1em; }
   will-change: transform;
 }
 
-/* raking light on image panels */
+/* the same light on image panels, warmer and wider */
 .rake-media { position: relative; }
 .rake-media::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 2;
-  background: linear-gradient(105deg, transparent 30%, rgba(216, 188, 128, 0.16) 50%, transparent 70%);
-  transform: translateX(-101%) skewX(-4deg);
+  background: radial-gradient(30rem 24rem at var(--mx, 50%) var(--my, 50%), rgba(216, 188, 128, 0.22), transparent 68%);
+  opacity: 0;
+  transition: opacity 0.7s var(--ease-out);
   pointer-events: none;
 }
-.rake-media:hover::before {
-  transform: translateX(101%) skewX(-4deg);
-  transition: transform 1s var(--ease-out);
+.rake-media:hover::before { opacity: 1; }
+@media (hover: none) {
+  .rake-row::after, .rake-media::before { display: none; }
 }
 
 /* ============================================================
@@ -460,9 +465,15 @@ p + p { margin-top: 1em; }
    what lets a page arrival stagger its content as one movement. */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(1.3rem);
+  transform: translateY(1.6rem);
+  filter: blur(6px); /* copy arrives as a focus pull, not only a fade */
 }
-[data-reveal].in { opacity: 1; transform: none; }
+[data-reveal].in { opacity: 1; transform: none; filter: none; }
+
+/* Headings are split into lines at reveal time and rise out of a clipped box,
+   the hero's own cut. The heading itself only needs to be hidden until then. */
+h1[data-reveal], h2[data-reveal], h3[data-reveal] { transform: none; filter: none; }
+.line-mask { overflow: clip; }
 
 /* A section's ground, revealed as its own layer. It must undo the generic
    hidden state above: hiding the whole section would take its contents with
@@ -470,6 +481,7 @@ p + p { margin-top: 1em; }
 [data-reveal="plate"] {
   opacity: 1;
   transform: none;
+  filter: none;
   --plate: 0;
 }
 [data-reveal="plate"].in { --plate: 1; }
@@ -478,9 +490,24 @@ p + p { margin-top: 1em; }
 [data-reveal="strata"] {
   opacity: 1;
   transform: none;
+  filter: none;
   clip-path: inset(24% 0 24% 0);
 }
 [data-reveal="strata"].in { clip-path: inset(0 0 0 0); }
+
+/* A chain row is laid left to right, the way the route line beside it draws.
+   The clip is on the row's CHILDREN, never on the row: the row is the
+   IntersectionObserver target, and Chrome intersects a target through its
+   own clip-path, so a row clipped to nothing was never seen entering the
+   viewport and never revealed. The station dot (the row's ::before) is
+   unclipped and waits for its line. */
+[data-reveal="row"] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+[data-reveal="row"] > * { clip-path: inset(0 100% 0 0); }
+[data-reveal="row"].in > * { clip-path: none; }
 
 .split-line { overflow: clip; display: block; }
 .split-line > .split-inner {
@@ -493,6 +520,7 @@ p + p { margin-top: 1em; }
 [data-reveal="rule"] {
   transform: scaleX(0);
   transform-origin: left;
+  filter: none;
 }
 [data-reveal="rule"].in { transform: scaleX(1); }
 
@@ -636,10 +664,12 @@ p + p { margin-top: 1em; }
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   [data-reveal],
+  [data-reveal="row"] > *,
   .split-line > .split-inner {
     opacity: 1 !important;
     transform: none !important;
     clip-path: none !important;
+    filter: none !important;
     --plate: 1 !important;
     transition: none !important;
   }

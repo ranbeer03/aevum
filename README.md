@@ -246,6 +246,62 @@ property is not animatable, so the `@property` block is load-bearing.
 An authored `--reveal-delay` on an element overrides the generic cascade, so a
 hero can still time its own lines.
 
+**Headings are split into lines at reveal time** (GSAP SplitText, `mask:
+'lines'`) and rise out of a clipped box, the hero's own cut, with a 100ms
+stagger between lines. Splitting happens when the heading is revealed rather
+than at build time because where a line breaks depends on the viewport, and the
+split is reverted once the lines are in so a later resize rewraps plain text.
+The lines take the hidden transform in the same synchronous step the heading
+gives up its own, so no frame can paint the finished heading first.
+
+**Copy arrives as a focus pull,** not only a fade: `blur(6px)` to sharp over a
+second, on a rounder curve than the exponential one the masks use. The reason is
+measured: with the exponential curve, a 21px rise in 620ms was 91% complete
+after 218ms, which read as a pop. Nine tenths of the move in the first fifth is
+right for a mask and wrong for a paragraph.
+
+**Content leaves as it arrived.** Each section's wrapper carries `data-exit`
+and recedes (opacity and 44px of lift) as it passes out through the top, scrubbed
+by ScrollTrigger so scrolling back brings it straight back. It is on the
+wrapper, not the revealed children, because Motion owns their transforms and
+two engines writing one transform fight; and it is opacity and translate only,
+because it runs on every scroll frame and a blur would re-rasterise the block
+each time.
+
+**Chain rows** (`data-reveal="row"`) are laid down left to right with a
+`clip-path` inset, the way the route line beside them draws.
+
+### Where the clips sit in the scroll
+
+Camera anchors are measured where a `[data-cam]` element sits centred in the
+viewport, so a zero-height `.pass--mark` placed beside a section is an anchor
+pinned to that section's edge. The home page uses marks and three short passes
+to time the clips against the copy, and nothing else:
+
+| in document order | anchor | what it does |
+|---|---|---|
+| `#limestone` | `rim` | the chapter, centred |
+| `.pass--gap` (40vh) | | the camera tilts off the benches toward open sky |
+| mark | `clinkerIn` | the shaft is fully lit; the nodules begin to fall |
+| `#clinker` | `clinkerHold` | nodules mid-fall with the chapter centred |
+| mark | `clinkerOut` | the nodules have fallen out as the chapter leaves |
+| mark | `vesselIn` | the vessel is live from 0.12 (the first half second is a keel line) |
+| `.pass--build` (90vh) | | it draws itself against the sky before the chain's heading comes up |
+| `.chain` | `vesselBuilt` | finished, with the chain centred |
+| mark | `vesselHold` | still finished: the hold spans the chain's lower half |
+| `.pass--run` (60vh) | `vesselRun` | it comes apart as the Incoterms leave the top |
+| mark | `vesselOut` | gone, before the Emirates arrive |
+
+The previous layout did the same job with six tall spacers that added up to
+592vh of page with nothing on it; this is 190vh, and the page is a third
+shorter. Adjacent marks (`clinkerOut`, `vesselIn`) share a camera pose so the
+camera is never asked for a step between two anchors a pixel apart.
+
+**`scrubTo` never seeks to exactly 0.** A clip that has not been seeked yet
+uploads a black frame however ready it reports itself, so the first stop of a
+clip drew nothing until the reader had scrolled a little past it. The floor is
+40ms.
+
 ### The backdrop clips
 
 Two clips sit behind the clinker and supply-chain chapters: nodules falling
@@ -327,8 +383,16 @@ light on black.
 
 The clips are not fetched until `World.whenReady` resolves: on a slow
 connection they otherwise compete with the model for bandwidth and hold the
-preloader up. Phones download neither, and the elements carry no `poster`,
-since a poster is fetched even under `preload="none"`.
+preloader up. A Save-Data visitor downloads neither, and the elements carry no
+`poster`, since a poster is fetched even under `preload="none"`.
+
+**The box may bleed off the top and bottom** (`placeClip` clamps only
+sideways). The clinker shaft runs the clip's full height, so a visible top edge
+is a hard line across the light; the box is set high enough that its top is
+above the viewport, and the `clinkerHold` camera looks low enough that the near
+terraces cover its foot. Where no camera framing can do that, a portrait phone
+having no spare height, each placement carries a `feather`: the clip thins out
+over its lowest stretch instead of ending on a line.
 
 **What was removed, and where it went.** Earlier rounds used photographic clips
 that had to be dissolved into the world, which needed a render target, a

@@ -51,10 +51,11 @@ const canonical = new URL(Astro.url.pathname, site.domain).href;
     <ClientRouter />
     <noscript>
       <style>
-        [data-reveal], .split-line > .split-inner {
+        [data-reveal], [data-reveal="row"] > *, .split-line > .split-inner {
           opacity: 1 !important;
           transform: none !important;
           clip-path: none !important;
+          filter: none !important;
           --plate: 1 !important;
         }
         .loader { display: none !important; }
@@ -66,7 +67,12 @@ const canonical = new URL(Astro.url.pathname, site.domain).href;
       // boots (a bad chunk, or a connection that stalls), the page must not stay
       // behind the loading mark. `no-motion` also un-hides the reveal targets,
       // which the bundle would otherwise have been the one to show.
+      // It bails if the bundle DID arrive: world.js registers AevumWorld the
+      // moment it executes. Unconditional, this fired ten seconds into every
+      // visit and showed everything below the fold at rest, so a reader who
+      // took their time saw no reveal at all further down the page.
       setTimeout(() => {
+        if (window.AevumWorld) return;
         document.documentElement.classList.add('no-motion');
         document.documentElement.classList.remove('is-loading');
         document.getElementById('loader')?.remove();

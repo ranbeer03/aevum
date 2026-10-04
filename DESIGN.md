@@ -109,14 +109,14 @@ Ground truth: `src/styles/global.css` (tokens, primitives, plates), `src/scripts
 
 Aevum trades the ground itself — limestone and clinker — and the site **is** that ground: one persistent, procedurally built Three.js world behind every page. A terraced open-pit quarry carved into an arid faceted mountain range, lit by one low dawn sun, gold dust hanging in the pit air, a kiln ember burning at the floor. Every section names a camera **stop** in that world (`data-cam="rim"`), and scrolling spans the camera between the stops above and below the reader — down into the pit and back up, in both directions; the pointer orbits the view; navigating to another page **flies** the camera to that page's stops while Astro View Transitions morph the content and a gold seam sweeps the top edge. The whole site is one continuous excavation seen from a moving camera, never four separate pages. Content rides over the world as transparent passages or translucent ivory plates, with local scrims wherever bare copy meets the world's rim-light.
 
-The doctrine is **hybrid scrub**: everything spatial (the camera flight, parallax media, drawn lines, the vein) is tied to scroll position and plays in both directions — the world moves with the reader's hand. Text reveals once and stays legible — words are never scrubbed, never re-hidden. The genre defaults it refuses: cool corporate sans + blue duotone, the cream-serif editorial default, stock ships and handshakes, scroll-jacked chapters. Content is never gated behind motion; with JS off or WebGL unavailable, every word and image stands on the dark ground alone.
+The doctrine is **hybrid scrub**: everything spatial (the camera flight, parallax media, drawn lines, the vein, the two backdrop clips) is tied to scroll position and plays in both directions — the world moves with the reader's hand. Text reveals once, on its own clock, and is never scrubbed while it is being read; a section's wrapper recedes as it leaves through the top (scrubbed, reversible), so content leaves the way it arrived. The genre defaults it refuses: cool corporate sans + blue duotone, the cream-serif editorial default, stock ships and handshakes, scroll-jacked chapters. Content is never gated behind motion; with JS off or WebGL unavailable, every word and image stands on the dark ground alone.
 
 **Key Characteristics:**
 - One procedural 3D quarry world behind everything; sections name camera stops, scroll spans them, pages fly across them
 - Tracked uppercase Albert Sans display at Regular weight, tracking tightening as size grows, over editorial Spectral text
 - Translucent ivory plates and scrims floating over the live world — alpha only, never blur
 - Antique gold means one thing, interactive: links, buttons, active nav, the focus ring, the rail's live tick. Labels and small caps are ivory. Never poured
-- One-shot text reveals; raking-light hovers; no film grain (continuous decorative motion, removed in the HIG pass)
+- Headings rise line by line out of a clipped box (the hero's cut, on every heading); copy arrives as a focus pull; sections recede as they leave; a raking light follows the pointer on rows and frames; no film grain (continuous decorative motion, removed in the HIG pass)
 - Hairline-ruled rows instead of cards; square frames, pill buttons
 
 ## Colors
@@ -296,7 +296,7 @@ Square-cut and hairline over faceted ground. Media frames, forms, and sections h
 Uppercase small link in `--accent` (Albert Sans 400, 0.16em) with a 1px `currentColor` underline that rests at `scaleX(0.32)` and grows to full on hover/focus — a seam extending. Carries a small inline arrow SVG.
 
 ### Raking-light hovers (`.rake-row`, `.rake-media`)
-The inspection-light metaphor: hovering rakes a diagonal gold light across the surface, the way a trader inspects material. `.rake-row` (chain rows, application list items) sweeps a 9%-alpha gold band in 0.9s; `.rake-media` (image panels) sweeps a 16%-alpha band, skewed -4deg, in 1s, above the image (z-index 2). One-directional: the band snaps back off-hover with no transition. Use on interactive rows and linked imagery only.
+The inspection-light metaphor: a gold light rakes the surface under the pointer, the way a trader inspects material. The light is a radial gradient centred on `--mx/--my`, which `motion.js` writes from one delegated `pointermove` listener; it fades in over 0.6s (`.rake-row`, 13% alpha, 24rem by 12rem) or 0.7s (`.rake-media`, 22% alpha, 30rem by 24rem, above the image at z-index 2) and fades out on leave. It replaced a one-way sweep that ran on hover and snapped back on leave: crossing from one frame to the next, or leaving mid-sweep, cut the light off dead. A light at the pointer has no start and no end to snap between. Hidden under `(hover: none)`. Use on interactive rows and linked imagery only.
 
 ### Media (`src/components/Media.astro`)
 The single imagery primitive — a `.media` figure (forest-850 ground, `overflow: clip`, cover-fit child). Props:
@@ -478,9 +478,22 @@ similar color to stylize noninteractive text is confusing."
 Glass checklist. Plates never blur: glass belongs to the functional layer, not
 content (`materials.md`).
 
-**Motion.** The intro fly-in is the one orchestrated moment. The film-grain
-overlay is gone: continuous decorative motion with no meaning
+**Motion.** The intro is the one orchestrated moment: the camera starts close
+and high over the benches with the frame full of rock and haze, and lifts back
+to the horizon of the opening stop while the copy rises, the reverse of the
+descent the page then makes. (It used to start pulled back and dolly in, which
+framed the sculpt small enough for its outer edge and collar to show.) The
+film-grain overlay is gone: continuous decorative motion with no meaning
 (`motion.md`: "Don't add motion for the sake of adding motion").
+
+**Motion pass (same branch), the section vocabulary.** Headings split into
+lines at reveal time and rise out of a clipped box, 1.05s with a 100ms stagger
+per line; copy rises 1.6rem from `blur(6px)` to sharp over 1s on a rounder
+curve (the exponential one put 91% of a 21px rise into its first 218ms, which
+read as a pop); images keep the strata clip reveal; chain rows are laid left to
+right with a clip inset; each section's wrapper recedes as it leaves the top,
+scrubbed and reversible, opacity and translate only. Reduce Motion shows
+everything at rest and animates none of it, including the blur.
 
 **Quality floor, verified with Playwright:** no horizontal scroll at 320px; no
 clipped controls at 200% text with hierarchy intact; reduced motion holds the

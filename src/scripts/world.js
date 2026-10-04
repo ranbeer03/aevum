@@ -103,19 +103,30 @@ const STOPS = {
   // Clinker. Only a corner of the quarry is in frame, and the clip sits among
   // the terraces rather than in front of them, so the nodules fall behind the
   // rock instead of stopping against its edge.
-  clinkerIn:   { pos: [24.7, 17.9, -16.5],  look: [-8.3, 32.7, -29.2],  fog: 0.0080, deep: 0.44, kiln: 0.50, layer: 'world', clipT: 0.00,
+  // The shaft is already the layer at clinkerIn, a third of a second in, where
+  // it is fully lit and the nodules have not yet entered: so the shaft fades
+  // up during the tilt to the sky and the fall only starts once the chapter is
+  // in. The hold looks LOW enough that the
+  // near terraces fill the lower right of the frame, which is what the beam's
+  // foot disappears behind.
+  clinkerIn:   { pos: [24.7, 17.9, -16.5],  look: [-8.3, 32.7, -29.2],  fog: 0.0080, deep: 0.44, kiln: 0.50, layer: 'clinker', clipT: 0.08,
                  sm: { pos: [42, 22, 14],  look: [-4, 34, -28] } },
-  clinkerHold: { pos: [52, 19, 2],   look: [-12, 27, -30],  fog: 0.0090, deep: 0.52, kiln: 0.62, layer: 'clinker', clipT: 0.50,
-                 sm: { pos: [46, 18, 0],   look: [-6, 31, -30] } },
-  clinkerOut:  { pos: [46, 17, -22], look: [-10, 25, -30],  fog: 0.0095, deep: 0.60, kiln: 0.52, layer: 'world', clipT: 1.00,
-                 sm: { pos: [42, 16, -22], look: [-4, 29, -30] } },
+  clinkerHold: { pos: [52, 21, 2],   look: [-12, 17, -30],  fog: 0.0090, deep: 0.52, kiln: 0.62, layer: 'clinker', clipT: 0.50,
+                 sm: { pos: [46, 19, 0],   look: [-6, 23, -30] } },
+  // clinkerOut and vesselIn are adjacent marks a pixel apart (one closes the
+  // clinker clip, the other opens the vessel clip), so they share a pose:
+  // the camera must not be asked for a step between them.
+  clinkerOut:  { pos: [34, 18, -46], look: [4, 30, -30],  fog: 0.0095, deep: 0.62, kiln: 0.56, layer: 'world', clipT: 1.00,
+                 sm: { pos: [30, 17, -46], look: [4, 32, -30] } },
 
   // Supply chain. The camera tilts off the quarry entirely and faces open sky,
   // so the vessel draws itself against nothing, then the world comes back.
-  // clipT plateaus across vesselBuilt and vesselHold: the ship finishes
-  // building before the copy arrives, holds while it is read, and only resumes
-  // once the reader has moved past it.
-  vesselIn:    { pos: [34, 18, -46], look: [4, 30, -30],   fog: 0.0095, deep: 0.66, kiln: 0.60, layer: 'world', clipT: 0.00,
+  // The vessel is live from its first mark and starts 0.12 in, past the half
+  // second where the clip is only a keel line, so a hull is already drawn by
+  // the time the chain's heading comes up. clipT plateaus across vesselBuilt
+  // and vesselHold: the ship is finished with the chain centred, holds while
+  // it is read, and comes apart as the section leaves.
+  vesselIn:    { pos: [34, 18, -46], look: [4, 30, -30],   fog: 0.0095, deep: 0.66, kiln: 0.60, layer: 'vessel', clipT: 0.12,
                  sm: { pos: [30, 17, -46], look: [4, 32, -30] } },
   vesselBuilt: { pos: [32, 22, -60], look: [6, 52, -34],   fog: 0.0100, deep: 0.74, kiln: 0.55, layer: 'vessel', clipT: 0.46,
                  sm: { pos: [28, 21, -60], look: [6, 54, -34] } },
@@ -815,6 +826,7 @@ function buildClipPass() {
       uCenter: { value: new THREE.Vector2(0.5, 0.5) },
       uHalf: { value: new THREE.Vector2(0.5, 0.5) },
       uAmount: { value: 0 },
+      uFeather: { value: 0 },
     },
     vertexShader: `
       varying vec2 vUv; uniform float uDepth;
@@ -823,7 +835,7 @@ function buildClipPass() {
       varying vec2 vUv;
       uniform sampler2D uTex;
       uniform vec2 uCenter, uHalf;
-      uniform float uAmount;
+      uniform float uAmount, uFeather;
       void main(){
         // The clip is placed, not stretched to the viewport: it occupies a
         // defined box so the quarry stays visible around it and the copy has
@@ -839,6 +851,10 @@ function buildClipPass() {
         // dim glow keys to a soft blend, which is what additive did anyway.
         // max() not perceptual luma, or saturated gold lines key too weak.
         float a = smoothstep(0.015, 0.20, max(max(c.r, c.g), c.b));
+        // Soft foot. Where the terrain cannot be arranged to cover the box's
+        // bottom edge (a portrait phone has no spare height for that), the
+        // clip thins out over its lowest stretch instead of ending on a line.
+        a *= smoothstep(0.0, max(uFeather, 0.0001), uv.y);
         gl_FragColor = vec4(c, a * uAmount);
       }`,
   });
@@ -863,7 +879,10 @@ function scrubTo(el, t) {
   if (!el || el.readyState < 2) return false;
   if (!el.paused) el.pause();
   const dur = el.duration || 4;
-  const want = Math.min(dur - 0.05, Math.max(0, t) * (dur - 0.05));
+  // Never exactly 0: a clip that has not been seeked yet uploads a black
+  // frame however ready it says it is, so the first stop of a clip drew
+  // nothing until the reader had scrolled a little past it.
+  const want = Math.min(dur - 0.05, Math.max(0.04, Math.max(0, t) * (dur - 0.05)));
   if (Math.abs(el.currentTime - want) > 0.02) el.currentTime = want;
   return !!el.videoWidth;
 }
@@ -881,15 +900,18 @@ const CLIP_DEPTH = { clinker: 0.92, vessel: 1.4 };
    with the chapter's copy held out to either side of it. `sm` is the phone
    framing, where a portrait viewport needs the clip larger and higher. */
 const PLACE = {
-  // lifted clear of the chapter's body copy, which sits centre left of it
-  clinker: { w: 0.46, x: 0.76, y: 0.70, dim: 1, sm: { w: 0.92, x: 0.54, y: 0.76, dim: 0.6 } },
+  // Set high enough that the box's top edge is above the viewport: the shaft
+  // runs the clip's full height, so a visible top edge is a hard cut across
+  // the light. Its foot lands behind the near terraces (see clinkerHold).
+  clinker: { w: 0.50, x: 0.76, y: 0.80, dim: 1, feather: 0.1, sm: { w: 1.4, x: 0.54, y: 0.86, dim: 0.6, feather: 0.35 } },
   // narrowed so it overlaps the right hand column at its edge only: the ask was
   // slight overlap, and at full width the copy underneath stopped being readable
   vessel:  { w: 0.52, x: 0.46, y: 0.50, dim: 1, sm: { w: 0.96, x: 0.50, y: 0.30, dim: 0.55 } },
 };
 
-// Fit the clip inside its box with its own aspect preserved, and keep it on
-// screen if the box would run past an edge.
+// Fit the clip inside its box with its own aspect preserved. The box is
+// allowed to run past the top and bottom edges on purpose (that is how a clip
+// hides its own edge); it is only kept inside the viewport sideways.
 function placeClip(name, el, center, half) {
   const p = PLACE[name];
   const box = (small && p.sm) ? { ...p, ...p.sm } : p;
@@ -897,16 +919,13 @@ function placeClip(name, el, center, half) {
   const sa = window.innerWidth / window.innerHeight;
   let hw = box.w / 2;
   let hh = (box.w * sa / va) / 2;
-  const over = Math.max(1, hh * 2 / 0.94);  // never taller than the viewport
+  const over = Math.max(1, hh * 2 / 1.1);  // never much taller than the viewport
   hw /= over; hh /= over;
-  center.set(
-    Math.min(1 - hw, Math.max(hw, box.x)),
-    Math.min(1 - hh, Math.max(hh, box.y))
-  );
+  center.set(Math.min(1 - hw, Math.max(hw, box.x)), box.y);
   half.set(hw, hh);
   // A phone has no side lane for the copy to sit in, so the clip steps back
   // and reads as background rather than competing with the text over it.
-  return box.dim ?? 1;
+  return box;
 }
 
 // Which clip is showing at this scroll position, and how strongly. Only ever
@@ -933,14 +952,15 @@ function drawClip() {
 
   const { mat, scene, cam } = state.clipPass;
   mat.uniforms.uTex.value = clipTexture(el);
-  const dim = placeClip(name, el, mat.uniforms.uCenter.value, mat.uniforms.uHalf.value);
+  const box = placeClip(name, el, mat.uniforms.uCenter.value, mat.uniforms.uHalf.value);
+  mat.uniforms.uFeather.value = box.feather || 0;
   // Depth expressed as a distance just past what the camera is looking at, then
   // converted to NDC, rather than a magic constant: the projection changes and
   // a hardcoded value would silently stop occluding.
   const c = state.camera;
   const d = Math.max(c.near + 1, c.position.distanceTo(state.look) * CLIP_DEPTH[name]);
   mat.uniforms.uDepth.value = (c.far + c.near - (2 * c.far * c.near) / d) / (c.far - c.near);
-  mat.uniforms.uAmount.value = amt * dim;
+  mat.uniforms.uAmount.value = amt * (box.dim ?? 1);
 
   const r = state.renderer;
   r.autoClear = false;
@@ -1126,17 +1146,26 @@ export const World = {
     if (!state.reduced) state.lambda = 1.6;
   },
 
-  // The first sight of the world is a move, not a cut: it starts wide, high
-  // and hazy, then settles onto the opening stop over about two seconds while
-  // the copy rises. Called when the preloader lifts.
+  // The first sight of the world is a move, not a cut. It used to start pulled
+  // back and dolly in, which framed the sculpt small enough for its outer
+  // edge to show. Now it starts CLOSE and high, looking down into the benches
+  // with the frame full of rock and haze, and the camera lifts back and tilts
+  // up to the horizon of the opening stop while the copy rises: a surfacing,
+  // the reverse of the descent the page then makes. Called when the preloader
+  // lifts.
   intro() {
     if (state.reduced) return;
-    _off.subVectors(state.pos, state.look).multiplyScalar(0.5);
-    state.pos.add(_off);
-    state.pos.y += 7;
-    state.grade.fog = state.tGrade.fog * 2.6;
-    state.grade.deep = Math.min(1, state.tGrade.deep + 0.3);
-    state.lambda = 0.85;
+    _off.subVectors(state.pos, state.look);
+    // in to 55% of the standing distance, swung a little round the hill
+    const yaw = -0.22, cy = Math.cos(yaw), sy = Math.sin(yaw);
+    const ox = _off.x * cy - _off.z * sy, oz = _off.x * sy + _off.z * cy;
+    _off.set(ox, _off.y, oz).multiplyScalar(0.55);
+    state.pos.addVectors(state.look, _off);
+    state.pos.y += 11;
+    state.look.y -= 6;
+    state.grade.fog = state.tGrade.fog * 2.4;
+    state.grade.deep = Math.min(1, state.tGrade.deep + 0.25);
+    state.lambda = 0.8;
   },
 
   // Nest a sculpted quarry GLB in the landscape, auto-fitted so the existing
@@ -1282,6 +1311,9 @@ export const World = {
   },
   grade(g) { Object.assign(state.grade, g); Object.assign(state.tGrade, g); },
   get stops() { return STOPS; },
+  // the clip placements and depths, for the same by-eye tuning as the stops
+  get place() { return PLACE; },
+  get clipDepth() { return CLIP_DEPTH; },
 
   get ready() { return state.ready; },
   // resolves when the world is ready to be shown; the preloader awaits it

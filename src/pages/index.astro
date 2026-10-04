@@ -39,7 +39,7 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
   <section class="hero" data-depth="Top" data-cam="approach">
     <div class="hero__scrim" aria-hidden="true"></div>
 
-    <div class="container hero__content">
+    <div class="container hero__content" data-exit>
       <h1 class="hero__title">
         <span class="split-line" data-reveal><span class="split-inner">The raw materials</span></span>
         <span class="split-line" data-reveal style="--reveal-delay: 0.1s"><span class="split-inner">of cement.</span></span>
@@ -65,7 +65,7 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
 
   <!-- ============================== strata: limestone -->
   <section id="limestone" class="section chapter" data-depth="Limestone" data-cam="rim">
-    <div class="container chapter__grid">
+    <div class="container chapter__grid" data-exit>
       <div class="chapter__text copy-shield">
         <h2 data-reveal>Limestone</h2>
         <p class="lede" data-reveal style="--reveal-delay: 0.08s">
@@ -103,14 +103,16 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
     </div>
   </section>
 
-  <!-- The world drowns itself in fog graded to the clip's own top colour and
-       lifts toward open sky, so the frame is already that colour when the clip
-       crossfades in over it. See STOPS in world.js. -->
-  <div class="pass" data-cam="clinkerIn" aria-hidden="true"></div>
+  <!-- The camera tilts off the benches toward open sky across this short gap
+       and the light shaft fades up as it goes. The clinker chapter arrives while
+       that is still happening; the mark right before it is where the shaft is
+       fully lit and the nodules begin to fall. See STOPS in world.js. -->
+  <div class="pass pass--gap" aria-hidden="true"></div>
+  <div class="pass pass--mark" data-cam="clinkerIn" aria-hidden="true"></div>
 
   <!-- ============================== kiln depth: clinker, over clip A -->
   <section id="clinker" class="section chapter chapter--flip" data-depth="Cement Clinker" data-cam="clinkerHold">
-    <div class="container chapter__grid">
+    <div class="container chapter__grid" data-exit>
       <div class="chapter__text copy-shield">
         <h2 data-reveal>Cement Clinker</h2>
         <p class="lede" data-reveal style="--reveal-delay: 0.08s">
@@ -148,13 +150,18 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
     </div>
   </section>
 
-  <div class="pass" data-cam="clinkerOut" aria-hidden="true"></div>
-  <div class="pass pass--long" data-cam="vesselIn" aria-hidden="true"></div>
-  <div class="pass" data-cam="vesselBuilt" aria-hidden="true"></div>
+  <!-- The nodules have fallen out by the time the chapter has left. The camera
+       then tilts to open sky and the vessel starts drawing itself over this
+       pass, so it is already building when the chain's heading comes up. It is
+       finished (vesselBuilt) with the chain centred, and the mark after the
+       section holds that frame until the copy has been read. -->
+  <div class="pass pass--mark" data-cam="clinkerOut" aria-hidden="true"></div>
+  <div class="pass pass--mark" data-cam="vesselIn" aria-hidden="true"></div>
+  <div class="pass pass--build" aria-hidden="true"></div>
 
   <!-- ============================== the chain, over clip B -->
-  <section class="section chain" data-depth="Supply Chain" data-cam="vesselHold">
-    <div class="container">
+  <section class="section chain" data-depth="Supply Chain" data-cam="vesselBuilt">
+    <div class="container" data-exit>
       <div class="chain__head copy-shield">
         <h2 data-reveal>One chain, quarry to mill</h2>
         <p class="lede chain__lede" data-reveal style="--reveal-delay: 0.08s">
@@ -166,7 +173,7 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
         <span class="chain__line" data-draw aria-hidden="true"></span>
         <ul class="chain__list">
           {services.map((s) => (
-            <li class="chain__row rake-row" data-station>
+            <li class="chain__row rake-row" data-station data-reveal="row">
               <h3 class="chain__name">{s.name}</h3>
               <p class="chain__copy">{s.copy}</p>
             </li>
@@ -185,12 +192,15 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
     </div>
   </section>
 
-  <div class="pass" data-cam="vesselRun" aria-hidden="true"></div>
-  <div class="pass pass--long" data-cam="vesselOut" aria-hidden="true"></div>
+  <!-- the vessel holds while the chain is read, comes apart as the section
+       scrolls off, and is gone before the Emirates arrive -->
+  <div class="pass pass--mark" data-cam="vesselHold" aria-hidden="true"></div>
+  <div class="pass pass--run" data-cam="vesselRun" aria-hidden="true"></div>
+  <div class="pass pass--mark" data-cam="vesselOut" aria-hidden="true"></div>
 
   <!-- ============================== the emirates -->
   <section class="section emirates" data-depth="The Emirates" data-cam="basin">
-    <div class="container emirates__grid">
+    <div class="container emirates__grid" data-exit>
       <div class="emirates__content copy-shield">
         <h2 data-reveal>Grounded in the Emirates</h2>
         <p class="lede" data-reveal style="--reveal-delay: 0.08s">
@@ -237,13 +247,20 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
 </Base>
 
 <style>
-  /* A handoff spacer. It holds no content: it exists to give the camera and
-     the backdrop crossfade room to happen, which is the whole trick. */
-  .pass { height: 84vh; pointer-events: none; }
-  /* clip B swings further in brightness than clip A at both ends, so its ramps
-     get more scroll to travel over */
-  .pass--long { height: 128vh; }
-  @media (max-width: 860px) { .pass { height: 56vh; } .pass--long { height: 84vh; } }
+  /* Handoff spacers. A mark has no height: it is a camera anchor pinned to the
+     edge of the section beside it, so a stop lands exactly where a chapter
+     begins or ends. The others are the scroll a clip needs to run. The old
+     spacers added up to 592vh of page with nothing on it; these are 200vh. */
+  .pass { pointer-events: none; }
+  .pass--mark { height: 0; }
+  .pass--gap { height: 40vh; }    /* benches to open sky, the light shaft rising */
+  .pass--build { height: 90vh; }  /* the vessel draws itself before the chain arrives */
+  .pass--run { height: 60vh; }    /* and comes apart as the chain leaves */
+  @media (max-width: 860px) {
+    .pass--gap { height: 28vh; }
+    .pass--build { height: 64vh; }
+    .pass--run { height: 44vh; }
+  }
 
   /* -------- hero: type floating over the live world */
   .hero {
