@@ -27,6 +27,27 @@ of the site against Apple's Human Interface Guidelines foundations on the
 tracking decisions, what gold is allowed to mean, and the accessibility states
 the one glass surface answers to.
 
+## Checking motion without a screen
+
+```bash
+node dev/motion-harness.mjs check http://localhost:4322 1440x900 /,/about,/commodities,/contact
+```
+
+`dev/motion-harness.mjs` drives the built site in headless Chromium
+(playwright-core, already a dev dependency). `check` sweeps each page on a
+viewport, in normal and reduced motion, and reports page errors, reveal targets
+left unrevealed, anything still hidden, leftover split markup and horizontal
+overflow. `anchors` screenshots every camera stop settled; `stop <name[:frac]>`
+screenshots one stop, or a point between two, with optional patches to stops,
+placements and depths as JSON, so a framing can be tried without editing
+`world.js`; `trace <selector>` prints an element's reveal frame by frame;
+`intro` and `hover` capture frame sequences; `perf` measures scroll frame gaps
+on the GPU. The in-app browser pane does not run rAF while hidden, which is why
+this exists. Two things it learned the hard way: the world's damp caps `dt` at
+50ms a frame, so under the software renderer a fixed wait is not enough and
+every shot polls until the camera has stopped moving; and captures must run one
+at a time, since three at once starve the renderer and the camera never arrives.
+
 ## Tuning camera stops
 
 ```bash
