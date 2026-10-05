@@ -16,7 +16,7 @@ colors:
   gold-bright: "#d8bc80"
   gold-deep: "#77613a"
   gold-plate: "#604c2c"  # interactive accent ON the ivory plate: 6.1:1 (gold-deep measured 3.97, a failure at 13px)
-  ink-on-ivory: "#14261d"  # 11.9:1 on the plate; dim .74 = 5.8:1; faint .70 = 5.1:1
+  ink-on-ivory: "#14261d"  # 11.9:1 on the plate; dim .84 = 7.7:1; faint .70 = 5.1:1
   error: "#d97b6c"
 typography:
   hero:
@@ -50,7 +50,7 @@ typography:
     lineHeight: 1.58
   body:
     fontFamily: "Spectral, Georgia, serif"
-    fontSize: "1.0625rem"
+    fontSize: "1.125rem"
     fontWeight: 400
     lineHeight: 1.62
   small:
@@ -109,14 +109,14 @@ Ground truth: `src/styles/global.css` (tokens, primitives, plates), `src/scripts
 
 Aevum trades the ground itself — limestone and clinker — and the site **is** that ground: one persistent, procedurally built Three.js world behind every page. A terraced open-pit quarry carved into an arid faceted mountain range, lit by one low dawn sun, gold dust hanging in the pit air, a kiln ember burning at the floor. Every section names a camera **stop** in that world (`data-cam="rim"`), and scrolling spans the camera between the stops above and below the reader — down into the pit and back up, in both directions; the pointer orbits the view; navigating to another page **flies** the camera to that page's stops while Astro View Transitions morph the content and a gold seam sweeps the top edge. The whole site is one continuous excavation seen from a moving camera, never four separate pages. Content rides over the world as transparent passages or translucent ivory plates, with local scrims wherever bare copy meets the world's rim-light.
 
-The doctrine is **hybrid scrub**: everything spatial (the camera flight, parallax media, drawn lines, the vein, the two backdrop clips) is tied to scroll position and plays in both directions — the world moves with the reader's hand. Text reveals once, on its own clock, and is never scrubbed while it is being read; a section's wrapper recedes as it leaves through the top (scrubbed, reversible), so content leaves the way it arrived. The genre defaults it refuses: cool corporate sans + blue duotone, the cream-serif editorial default, stock ships and handshakes, scroll-jacked chapters. Content is never gated behind motion; with JS off or WebGL unavailable, every word and image stands on the dark ground alone.
+The doctrine is **hybrid scrub**: everything spatial (the camera flight, parallax media, drawn lines, the vein, the backdrop clip) is tied to scroll position and plays in both directions — the world moves with the reader's hand. Text reveals once, on its own clock, and is never scrubbed while it is being read; a section's wrapper recedes as it leaves through the top (scrubbed, reversible), so content leaves the way it arrived. The genre defaults it refuses: cool corporate sans + blue duotone, the cream-serif editorial default, stock ships and handshakes, scroll-jacked chapters. Content is never gated behind motion; with JS off or WebGL unavailable, every word and image stands on the dark ground alone.
 
 **Key Characteristics:**
 - One procedural 3D quarry world behind everything; sections name camera stops, scroll spans them, pages fly across them
 - Tracked uppercase Albert Sans display at Regular weight, tracking tightening as size grows, over editorial Spectral text
 - Translucent ivory plates and scrims floating over the live world — alpha only, never blur
 - Antique gold means one thing, interactive: links, buttons, active nav, the focus ring, the rail's live tick. Labels and small caps are ivory. Never poured
-- Headings rise line by line out of a clipped box (the hero's cut, on every heading); copy arrives as a focus pull; sections recede as they leave; a raking light follows the pointer on rows and frames; no film grain (continuous decorative motion, removed in the HIG pass)
+- **Quiet by default, one authored moment.** The vessel plays in a pinned chapter where the screen holds, the camera holds, and its copy rises in with the hull and is drawn up out of frame as it comes apart, all on the clip's own scroll; everywhere else headings rise line by line out of a clipped box, copy fades up 1rem, images are cut open from the foot, and sections simply scroll away. Images take an inspection lamp inside their frame; ledger rows take a typographic hover. No film grain (continuous decorative motion, removed in the HIG pass)
 - Hairline-ruled rows instead of cards; square frames, pill buttons
 
 ## Colors
@@ -295,8 +295,8 @@ Square-cut and hairline over faceted ground. Media frames, forms, and sections h
 ### Link-line (`.link-line`)
 Uppercase small link in `--accent` (Albert Sans 400, 0.16em) with a 1px `currentColor` underline that rests at `scaleX(0.32)` and grows to full on hover/focus — a seam extending. Carries a small inline arrow SVG.
 
-### Raking-light hovers (`.rake-row`, `.rake-media`)
-The inspection-light metaphor: a gold light rakes the surface under the pointer, the way a trader inspects material. The light is a radial gradient centred on `--mx/--my`, which `motion.js` writes from one delegated `pointermove` listener; it fades in over 0.6s (`.rake-row`, 13% alpha, 24rem by 12rem) or 0.7s (`.rake-media`, 22% alpha, 30rem by 24rem, above the image at z-index 2) and fades out on leave. It replaced a one-way sweep that ran on hover and snapped back on leave: crossing from one frame to the next, or leaving mid-sweep, cut the light off dead. A light at the pointer has no start and no end to snap between. Hidden under `(hover: none)`. Use on interactive rows and linked imagery only.
+### Hovers (images: the lamp; ledger rows: the step)
+**Images** take the inspection-light metaphor: a gold lamp under the pointer, the way a trader inspects material, drawn as `.media::after` so it is inside the frame and clipped by it (a lamp on a wrapper wider than its image spilled over empty world). **One lamp per group**: `motion.js` writes the same screen point into every image of a `[data-rake]` group (a commodity collage) as `--mx/--my`, so overlapping frames are lit as one surface. `--mx/--my` are registered `<length>` properties transitioned over 0.45s, so the lamp glides behind the pointer, appears at the pointer on entry (`.rake-jump`), fades over 0.8s, and is re-aimed while the page scrolls under a still pointer. Every photograph also leans in (`scale` 1.04 over 1.2s on `.media__inner`, never the `img`, which GSAP owns and stamps `scale: none` on). **Ledger rows** (`.ledger-row`: the home services) take a typographic hover instead, with nothing moving: a faint wash of ink comes up behind the row (0.8s in, 1.1s out), name and copy deepen to full ink, a 2.5rem accent rule draws under the name, and on the services the station dot fills. All on `--ease-soft` (cubic-bezier(0.33, 1, 0.68, 1)) with an 80ms hover-intent delay on the way in, so a pointer sweeping down the list does not fire every row; the earlier sideways step on the exponential curve read as snappy. All hovers only under `(hover: hover)`.
 
 ### Media (`src/components/Media.astro`)
 The single imagery primitive — a `.media` figure (forest-850 ground, `overflow: clip`, cover-fit child). Props:
@@ -306,22 +306,21 @@ The single imagery primitive — a `.media` figure (forest-850 ground, `overflow
 - `parallax` — vertical drift factor, e.g. `"0.12"` (framed drift) or `"0.3"` (collage accents); omit for static
 - `ratio` — CSS aspect-ratio, e.g. `"4 / 5"` (primary panels), `"4 / 3"` / `"16 / 9"` (secondaries)
 - `pos` — object-position, to differentiate crops of a reused photo
-- `vtName` — `view-transition-name`; give the same name to the twin image on another page and it morphs during navigation (`media-limestone`, `media-clinker` between Home chapters and Commodities pins)
 - extra attrs pass through (`data-reveal="strata"` is the norm for primary panels)
 
 ### Chapters / collage (Home)
-Text column + media collage: a primary 4/5 panel wrapped in a link to its commodity (`.chapter__primary-link`, `rake-media`, `vtName`, strata reveal, parallax 0.12, width `min(100%, 30rem)`) with a smaller 4/3 secondary overlapped at the bottom corner (parallax 0.3, the system's one lift shadow). `.chapter--flip` mirrors the layout. The limestone chapter is an `.is-light` ivory plate; the clinker chapter is a dark transparent passage with `.copy-shield` on its text.
+Limestone and clinker are **set the same way**, because they carry the same weight: text column + media collage, a primary 4/5 panel wrapped in a link to its commodity (`.chapter__primary-link`, strata reveal, parallax 0.12, width `min(100%, 30rem)`) with a smaller 4/3 secondary overlapped at the bottom corner (parallax 0.3, the system's one lift shadow); each collage is one `[data-rake]` group. Clinker is the mirror (`.chapter--flip`), on the kiln-lit east face (`seam`). The Commodities page follows the same rule: both articles on the same dark ground, the second mirrored. Supply Chain is the one **pinned chapter** (`.interlude`, 160svh of hold): one centred column, heading above, the vessel in a stage box sized to the clip (`.chain__ship`, which world.js draws into), copy below, the vessel playing straight through. The services that follow are the home page's **one ivory plate** (`.chain.is-light`, solid from its first pixel, under the heading "What we handle"): after the dark chapter in the sky the page opens out into a ledger, and the camera's long move back to the quarry happens behind it.
 
 ### Chain rows (Home services)
-A vertical gold SVG route line (`path[data-draw]`, riding the same seam as the page vein) beside hairline-ruled rows (`.chain__row.rake-row[data-station]`) over a soft gradient scrim. Each row has a 9px gold-stroked dot; when the drawn line reaches it the row gains `.passed`: dot fills gold with a 12px glow, name warms to gold-bright. Incoterms render as an inline display run separated by dots.
+On the ivory plate: a route line in `--accent` beside hairline-ruled rows (`.chain__row.ledger-row[data-station]`), name and copy in two columns. Each row has a 9px accent-stroked dot; when the drawn line reaches it the row gains `.passed`: the dot fills and the name deepens from dim to full ink. Incoterms render as an inline display run separated by dots.
 
 ### Spec lists / facts blocks (Commodities)
-Facts blocks open with a hairline and a small-caps gold title. Unconfirmed specs render as prose ("on request" + param run separated by `·`); confirmed values render as a `dl.spec-list` of hairline rows (param left in `--text`, value right in `--text-dim`). Applications are `.rake-row` hairline list items.
+Facts blocks open with a hairline and a small-caps gold title. Unconfirmed specs render as prose ("on request" + param run separated by `·`); confirmed values render as a `dl.spec-list` of hairline rows (param left in `--text`, value right in `--text-dim`). Applications are hairline list items.
 
 ### Fields (`.field`)
 Underline-only inputs: transparent ground, 1px `--line` bottom border, no radius, min-height 44px; label above in micro caps (0.18em, `--text-dim`). Focus: border warms to gold (no outline). Error: `.has-error` turns the underline and message #d97b6c; messages are written, human sentences. Selects get a custom stroked chevron in `.select-wrap`. The contact form itself is a hairline-bordered translucent plate (rgba(7,21,16,0.76), no blur).
 
-### Nav (`Nav.astro`, `transition:persist`)
+### Nav (`Nav.astro`, rendered per page)
 Fixed header, transparent at top; past 40px scroll it gains `.is-solid` (a `rgba(7,21,16,0.92)→0.72` forest gradient plate — alpha, not blur — plus a gold hairline bottom border). Scrolling down past 200px hides it (`translateY(-100%)`); any upward scroll returns it. Links are 0.9rem uppercase Albert Sans in `--text-dim` with a gold underline growing from left on hover/current. Desktop shows a pill Enquire CTA; ≤860px collapses to a two-line toggle opening a full-screen forest-975 drawer that wipes down via `clip-path`, with display links staggered by `--i` and Lenis stopped while open.
 
 ### Footer (`Footer.astro`)
@@ -339,27 +338,33 @@ Engine: `src/scripts/motion.js` — Lenis (smooth scroll, lerp 0.11) + GSAP Scro
 
 **The Hybrid Scrub Rule.** The *world* is scrubbed — the camera flight, parallax media, drawn lines, and the vein all track scroll position and play backward when the reader ascends. *Text* is one-shot — an IntersectionObserver (rootMargin `0px 0px -8% 0px`, threshold 0.05) adds `.in` once and unobserves; words never re-hide.
 
-### One-shot reveal primitives (CSS in global.css, gated on `html.js`)
-- `[data-reveal]` — fade + 1.3rem rise, 0.6s; stagger via `--reveal-delay` inline (0.08s steps typical).
-- `[data-reveal="mask"]` — clip-path wipe downward, 1s.
-- `[data-reveal="strata"]` — **starts VISIBLE**: `clip-path: inset(24% 0 24% 0)` opening to full in 1.2s. Imagery is never fully hidden, even pre-reveal; this is the default for primary panels.
-- `[data-reveal="rule"]` — hairline grows `scaleX(0→1)` from left, 1.1s.
-- `.split-line > .split-inner` — line-mask rise (110%→0, 0.9s) for hero/headline lines, two lines offset ~0.1s.
+### One-shot reveal primitives (CSS hidden states in global.css, entrances by Motion in motion.js)
+Quiet by default: one calm entrance per block, so the two pinned clip chapters are where the motion is.
+- `h1/h2/h3[data-reveal]` — split at reveal time (SplitText, `mask: 'lines'`) and rise **line by line** out of the line box, 1.1s cubic-out, 90ms apart. Reverted after, so a resize rewraps plain text.
+- `[data-reveal]` (everything else) — 1rem rise and fade, 1.0s. No blur.
+- `[data-reveal="strata"]` — the frame's `.media__inner` is cut open from its foot upward (`inset(100% 0 0 0)` to none, 1.5s in-out) while the photograph settles from `scale` 1.1. The figure stays unclipped because it is the observer's target.
+- `[data-reveal="row"]` — the row's children are laid left to right with a clip, 1.1s, 120ms apart.
+- `[data-reveal="rule"]` — hairline grows `scaleX(0→1)` from left, 1.4s.
+- `[data-reveal="shade"]` — the card behind copy over the world (`.copy-shield`) comes up as its own layer (`--shade` 0 to 1, 1s) ahead of the words on it.
+- `[data-reveal="survey"]` — How we work: a gold survey line is drawn across the three principles at a constant rate (down them on a phone), and each surfaces as the line reaches it: its marker, then its name and copy. The section's one authored moment.
+- **Photos recede** as they leave through the top: `--recede` scrubbed 0 to 1 gives 5% smaller and 40% dimmer via the individual `scale` and `filter` properties, so the entrance's transform is untouched. Text never fades out.
+- `.split-line > .split-inner` — hand-split hero lines rise through their mask, 1.2s cubic-out. **The `.split-line` mask itself is never hidden** (`opacity: 1; transform: none`): it used to inherit the generic hidden state and only got it back at the END of the rise, so every page title rose invisibly and then appeared at once, 1.6rem low and jumping up.
+- **Exits:** text scrolls away untouched (a scrubbed dim near the nav made the ivory ledger's lower rows pale on ivory while they were still being read); photos recede, above.
+- **The pinned chapter** (`.interlude`, home): a sticky one-screen stage inside a `100svh + --pin` section. The copy (`[data-scene="in out"]`) is a GSAP timeline scrubbed on the pin with no lag, the same scroll that drives the clip's playhead: each block rises through a fixed cut line at its foot and is drawn up through one at its head.
 
 ### Scrubbed systems
-- **The world camera:** the primary spatial motion of the whole site (see **The World**). `measureAnchors()` maps every `#main [data-cam]` section to the scroll offset where it sits centred in the viewport and hands the list to `World.setAnchors()`; `sampleTarget(scrollY)` smoothsteps the camera's target pose and atmosphere between the two bracketing stops. Real scroll position, not normalised progress — no `scrollY / maxScroll`. The live pose follows the target through a damped lerp (`lambda` 4.5), on world.js's **own rAF loop in real seconds** — never the GSAP ticker — rendering every frame while the tab is visible.
+- **The world camera:** the primary spatial motion of the whole site (see **The World**). `measureAnchors()` maps every `#main [data-cam]` element to the scroll offset where it sits centred in the viewport (or, with `data-cam-at="f"`, where its top edge crosses `f` of the viewport height; measured from layout offsets, not painted rects, so a block mid-exit does not move its marks) and hands the list to `World.setAnchors()`; `sampleTarget(scrollY)` smoothsteps the camera's target pose and atmosphere between the two bracketing stops. Real scroll position, not normalised progress — no `scrollY / maxScroll`. The live pose follows the target through a damped lerp (`lambda` 4.5), on world.js's **own rAF loop in real seconds** — never the GSAP ticker — rendering every frame while the tab is visible.
 - **Framed parallax:** `[data-parallax]` media — JS sets the inner img/video height to `100 + ceil(strength*220)%` (overscan grows with strength so edges never show) and tweens `yPercent: -strength*100 → 0` (scrub 0.4). Torn down and rebuilt per page.
 - **Scrub video:** `video[data-scrub]` maps `currentTime` 0→duration across its section's transit (scrub 0.6), waiting for `loadedmetadata`.
 - **The gold vein:** injected by JS into `#main` on every page (1px, gold→25%-alpha gradient, left-aligned just outside the container, 0.65 opacity, ending in its diamond terminus), drawn `scaleY: 0 → 1` over the *entire page* scroll (scrub 0.3).
 - **Drawn routes:** `svg path[data-draw]` / `line[data-draw]` get dasharray = length and scrub `strokeDashoffset` to 0 (scrub 0.4, start `top 70%`, end `bottom 55%`). `[data-station]` rows toggle `.passed` at `top 62%` (removed on leave-back — stations dim when ascending).
 - **Depth rail:** per-section triggers toggle tick `.is-active` while the section spans 55% viewport.
 
-### View transitions (Astro `<ClientRouter />`)
-- Root: `vt-out` 0.3s (fade + rise -1.5rem) / `vt-in` 0.55s (fade + rise from 2rem), wrapped in `prefers-reduced-motion: no-preference`.
-- **Page flight:** the persistent world does not transition — it *flies*. `World.flight()` drops the damp rate to `lambda` 1.6 and the re-measured anchors move the target to the incoming page's stops, so the camera eases into the new vantage over ~1.8s while the DOM morphs over it. No tween, no captured pose.
-- **Morphs:** `Media` `vtName` gives paired images a shared `view-transition-name` — the commodity panel on Home morphs into its pin on Commodities.
-- **Seam sweep:** on every `astro:after-swap` the fixed 2px gold `#seam` replays `seam-sweep` (0.7s: scaleX 0→1, then fades).
-- `.world`, `Nav`, `.seam`, and `.grain` carry `transition:persist` — the shell and the world never re-render.
+### Page changes (Astro `<ClientRouter fallback="swap" />`, without View Transitions)
+- **No browser View Transitions.** An inline script hides `document.startViewTransition`, so Astro takes its own swap path (same lifecycle events, client-side, the world kept alive). The site used nothing the API offers, and its snapshot step flickered in Safari, which captures the WebGL world blank. Styles are inlined into every page (`build.inlineStylesheets: 'always'`) so a swap applies them in the same step as the markup; as linked files Safari showed the new page unstyled for a frame.
+- **Exit and entrance** are motion.js's: the outgoing page dissolves in place (0.3s, opacity only), and the incoming page's text rises once, in one beat, on its own reveals. No page-level fade on arrival.
+- **Page flight:** the persistent world does not transition, it *flies*. `World.flight()` drops the damp rate to `lambda` 1.6 and the re-measured anchors move the target to the incoming page's stops.
+- `.world` and the clip `.backdrop` carry `transition:persist`, so the world never re-renders. The nav does not: each page renders its own so the active link is right, and motion.js rebinds it.
 
 ### Lifecycle (the fragile part — read before touching)
 - **Lenis is persistent.** Created once per session and **never destroyed on navigation** — tearing it down around a view transition churns scrollbar state mid-snapshot and **aborts the morph**. Do not "clean up" Lenis in teardown.
@@ -403,7 +408,7 @@ Engine: `src/scripts/motion.js` — Lenis (smooth scroll, lerp 0.11) + GSAP Scro
 
 ## Maintenance
 
-- **Add a commodity:** append one object to `src/data/commodities.js` (slug, name, short, image/panelImage + alts, intro, body, specsNote, specs `{param, value|null}`, applications, logistics) and drop its images in `/public/media/`. The Commodities page renders it in order (alternating dark passage / ivory plate, and `data-cam` `seam` for the first, `benchWall` for every later one), and the contact form's commodity select picks it up. Use `vtName={'media-' + slug}` on any Home panel you add so it morphs to its pin.
+- **Add a commodity:** append one object to `src/data/commodities.js` (slug, name, short, image/panelImage + alts, intro, body, specsNote, specs `{param, value|null}`, applications, logistics) and drop its images in `/public/media/`. The Commodities page renders it in order (each on the dark ground, every second one mirrored, and `data-cam` `seam` for the first, `benchWall` for every later one), and the contact form's commodity select picks it up.
 - **Contact / partners / form:** `src/data/site.js` is the single source: `contact` (email; phone and address render **nowhere** until real values land — never ship placeholders), `FORM_KEY` (Web3Forms — while empty, the form relabels its button "Draft an enquiry email" and falls back to a prefilled `mailto:` draft), `nav`, and `partners` (first name added activates the hidden "Working alongside" strip on Home). `TODO(launch)` comments mark every pending slot.
 - **Tune the world:** everything lives in `src/scripts/world.js` — `PIT` constants (position, radius, depth, bench height), the `C` palette, and the `STOPS` registry. **Re-framing a section is one line**: change its `data-cam` to another stop name. Adding a vantage is one entry in `STOPS` (`pos`, `look`, `fog`, `deep`, `kiln`) — no page wiring, no layout prop; unknown names fall back to `rim`. Tune the arrival feel with `state.lambda` (4.5 standing) and `World.flight()`'s 1.6. When a sculpted quarry model is ready, `await World.loadModel('/media/quarry.glb', { scale, y })` swaps the mesh named `terrain` for the GLB (GLTFLoader is lazy-imported) and keeps every stop, light and grade — origin at the pit centre, ground plane at y = 0.
 - **Scroll-video (Seedance renders):** drop the mp4 in `/public/media/video/` and pass `video` + `scrub` to `<Media>` — playback follows the scroll via `data-scrub`. (The hero has no media layer any more — the live world is the hero visual.)
@@ -478,25 +483,30 @@ similar color to stylize noninteractive text is confusing."
 Glass checklist. Plates never blur: glass belongs to the functional layer, not
 content (`materials.md`).
 
-**Motion.** The intro is the one orchestrated moment: the camera starts close
-and high over the benches with the frame full of rock and haze, and lifts back
-to the horizon of the opening stop while the copy rises, the reverse of the
-descent the page then makes. (It used to start pulled back and dolly in, which
-framed the sculpt small enough for its outer edge and collar to show.) The
-film-grain overlay is gone: continuous decorative motion with no meaning
-(`motion.md`: "Don't add motion for the sake of adding motion").
+**Motion.** The intro is the one orchestrated moment: the camera starts a
+little back and well below the opening vantage, deep in haze, then rises and
+pushes in to it as the haze lifts (3.4s, in-out cubic, aimed at the live
+target). The low start is what keeps it clean: the near terraces cover
+everything past the sculpt's rim the whole way in, where any start further back
+than about 1.15x showed the cut on the right of the frame. (Earlier versions
+dollied in from 1.5x, which showed the edge, then started close and high, which
+did 70% of its travel in half a second.) The film-grain overlay is gone:
+continuous decorative motion with no meaning (`motion.md`: "Don't add motion
+for the sake of adding motion").
 
-**Motion pass (same branch), the section vocabulary.** Headings split into
-lines at reveal time and rise out of a clipped box, 1.05s with a 100ms stagger
-per line; copy rises 1.6rem from `blur(6px)` to sharp over 1s on a rounder
-curve (the exponential one put 91% of a 21px rise into its first 218ms, which
-read as a pop); images keep the strata clip reveal; chain rows are laid left to
-right with a clip inset; each section's wrapper recedes as it leaves the top,
-scrubbed and reversible, opacity and translate only. Reduce Motion shows
-everything at rest and animates none of it, including the blur.
+**Motion pass, the section vocabulary.** Quiet by default with one authored
+moment: the vessel plays in a pinned chapter where the screen and the camera
+hold and the copy arrives and leaves on the clip's own scroll; other sections
+take one calm entrance and leave by scrolling away. The first version of this
+pass put a letter wave, a line rise and a lift on every block at once, and it
+read as crowded. See Motion → One-shot reveal primitives. Reduce Motion shows
+everything at rest and animates none of it.
 
 **Quality floor, verified with Playwright:** no horizontal scroll at 320px; no
 clipped controls at 200% text with hierarchy intact; reduced motion holds the
 world still and hides nothing; keyboard focus is a 2px gold ring at 3px
 offset; frame times unchanged at p50/p95 on desktop and on a 4x-throttled
 phone.
+
+
+**Cards behind copy on the world (v4.1).** `.copy-shield::before` is a flat card: one even translucent fill (forest at 0.62), a 1px gold hairline at 0.14 and 1.5rem corners. Flat, not a fading gradient: the client preferred it as modern and minimal over a scrim that read as shade. On desktop it bleeds around its copy (`inset: -1.75rem -2rem`) without moving the layout. On a phone it cannot bleed (wider than the screen it showed only its rounded bottom corners, cut off at both sides), so it sits on the page margins (`inset: 0`, 1.25rem corners) and the copy steps in from it with padding, all four corners on screen.

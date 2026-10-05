@@ -30,8 +30,16 @@ the one glass surface answers to.
 ## Checking motion without a screen
 
 ```bash
-node dev/motion-harness.mjs check http://localhost:4322 1440x900 /,/about,/commodities,/contact
+npm run build
+GPU=1 node dev/motion-harness.mjs check http://localhost:4324 1440x900 /,/about,/commodities,/contact
 ```
+
+Point it at a **production** preview (`npm run build`, then
+`npm run preview -- --port 4324`). Whatever answers on 4322 may be an
+`astro dev` server, which serves live source: fine for behaviour, meaningless
+for frame times. `GPU=1` drives installed Chrome on the real GPU, which
+settles an order of magnitude faster than SwiftShader and is what a visitor
+sees.
 
 `dev/motion-harness.mjs` drives the built site in headless Chromium
 (playwright-core, already a dev dependency). `check` sweeps each page on a
@@ -47,6 +55,11 @@ this exists. Two things it learned the hard way: the world's damp caps `dt` at
 50ms a frame, so under the software renderer a fixed wait is not enough and
 every shot polls until the camera has stopped moving; and captures must run one
 at a time, since three at once starve the renderer and the camera never arrives.
+
+`perf` uncaps the frame rate to read raw headroom. Uncapped, the world draws
+hundreds of frames a second and floods the GPU command queue, so a raster task
+can stall behind it for ~400ms: that stall is the harness, not the site.
+Judge smoothness with vsync on (p99 at 120Hz is 10ms, desktop and phone).
 
 ## Tuning camera stops
 
@@ -102,9 +115,8 @@ bundled both, which is why the import itself is conditional.
 
 **To remove it all:** `src/components/CamDev.astro`, its branch in
 `src/layouts/Base.astro`, `dev/cam-writer.mjs`, the plugin line in
-`astro.config.mjs`, the `dev:camera` script, the `aevum-dev-4323` entry in
-`.claude/launch.json`, and `manual`/`nearStop`/`small`/`setStop`/`lookAt` on the
-World API.
+`astro.config.mjs`, the `dev:camera` script, and
+`manual`/`nearStop`/`small`/`setStop`/`lookAt` on the World API.
 
 ## Before launch## Before launch — the swap list
 
@@ -239,6 +251,39 @@ re-aimed at the model's mass rather than the world origin.
 
 ### How a page arrives
 
+**One entrance, never two.** Each of these was a double animation once:
+
+- **The loader's exit** has explicit start values (`opacity: [1, 0]`,
+  `transform: ['scale(1)', ...]`). Animated from `transform: none`, Motion
+  starts from a zero matrix, so the full-screen mark collapsed to a point and
+  grew back as a box while it faded. It is also on its own layer from the
+  first paint (`will-change`); promoted only as it left, it had no tiles and
+  vanished for a frame. The page exit's transform is given a start value for
+  the same reason.
+- **No page-level fade on arrival, at all.** Everything in a first screen
+  carries its own reveal (the plates included), so the incoming text moves
+  exactly once, in one beat: hero titles and subtitles are staggered 70 to
+  200ms, not 260 to 360. A container fade on top was a second animation on
+  every line, and the outgoing page sliding as it faded was a third; it now
+  dissolves in place.
+- **No named view transitions.** Photos used to carry `view-transition-name`,
+  so the browser morphed them on top of the page's own exit and entrance.
+- **No browser View Transitions at all.** An inline script in `Base.astro`
+  sets `document.startViewTransition = undefined`, so Astro routes with its own
+  swap (`fallback="swap"`; `"none"` would turn client routing off and reload
+  every page). Safari captures the WebGL world blank in a View Transition
+  snapshot, so every navbar click flashed the background out; and Astro's
+  `animate` fallback would run its own fade on top of motion.js's.
+- **Styles are inlined** (`build.inlineStylesheets: 'always'`). As linked files,
+  Safari applied a swapped-in page's stylesheet a frame late: the home hero
+  sat at the top of the screen, then jumped 252px into place.
+- **The header is not persisted.** Each page renders its own, so the active
+  link is right from the server, and motion.js rebinds the menu button per
+  page; the scroll handler looks the header up each time. Bound once, it kept
+  driving the first page's header after it was swapped out, and the menu
+  button did nothing on every later page.
+
+
 Reveals are declared in CSS and driven by Motion. CSS holds only the *hidden*
 state of each variant (`[data-reveal]`, `="strata"`, `="rule"`, `="plate"`,
 `.split-line`), so the page is correct before the script runs and if it never
@@ -253,7 +298,7 @@ Three rules keep it smooth, each of which was a visible bug first:
 - **The container fades up with its content.** Without it the swap snapped every
   background, plate and image to full strength in one frame and only the words
   animated, so a page change read as a cut with some text sliding afterwards.
-- **Reveal targets are scoped to `#main` and `footer`.** The persisted nav's
+- **Reveal targets are scoped to `#main` and `footer`.** The nav's
   drawer links are `.split-line` too and sit in the DOM *before* `#main`, so an
   unscoped query gave them the first three stagger slots and pushed every real
   heading back by 165 ms. The drawer runs its own entrance when it opens, and
@@ -267,56 +312,85 @@ property is not animatable, so the `@property` block is load-bearing.
 An authored `--reveal-delay` on an element overrides the generic cascade, so a
 hero can still time its own lines.
 
-**Headings are split into lines at reveal time** (GSAP SplitText, `mask:
-'lines'`) and rise out of a clipped box, the hero's own cut, with a 100ms
-stagger between lines. Splitting happens when the heading is revealed rather
-than at build time because where a line breaks depends on the viewport, and the
-split is reverted once the lines are in so a later resize rewraps plain text.
-The lines take the hidden transform in the same synchronous step the heading
-gives up its own, so no frame can paint the finished heading first.
+**Quiet by default, two authored moments.** The two pinned clip chapters are
+where the motion is; every other section takes one calm entrance and leaves by
+scrolling away. A letter wave on every heading, a line rise on every paragraph
+and a lift on every exit, all at once, is what made the page read as crowded.
 
-**Copy arrives as a focus pull,** not only a fade: `blur(6px)` to sharp over a
-second, on a rounder curve than the exponential one the masks use. The reason is
-measured: with the exponential curve, a 21px rise in 620ms was 91% complete
-after 218ms, which read as a pop. Nine tenths of the move in the first fifth is
-right for a mask and wrong for a paragraph.
-
-**Content leaves as it arrived.** Each section's wrapper carries `data-exit`
-and recedes (opacity and 44px of lift) as it passes out through the top, scrubbed
-by ScrollTrigger so scrolling back brings it straight back. It is on the
-wrapper, not the revealed children, because Motion owns their transforms and
-two engines writing one transform fight; and it is opacity and translate only,
-because it runs on every scroll frame and a blur would re-rasterise the block
-each time.
-
-**Chain rows** (`data-reveal="row"`) are laid down left to right with a
-`clip-path` inset, the way the route line beside them draws.
+- **Headings rise line by line** out of a clipped box (GSAP SplitText,
+  `mask: 'lines'`, 1.1s cubic-out, 90ms apart), split at reveal time because
+  line breaks depend on the viewport, and reverted afterwards. The lines take
+  the hidden state in the same synchronous step the heading gives up its own,
+  so no frame paints the finished heading first.
+- **The hero's `.split-line` mask is never hidden.** It inherited the generic
+  `[data-reveal]` state (opacity 0, 1.6rem low) and only lost it when `.in`
+  landed at the END of the rise, so every page title rose invisibly for a
+  second, then appeared at once and jumped 26px.
+- **Everything else** rises 1rem and fades in, 1s. Images are cut open from the
+  foot on an inner layer (`.media__inner`, from `Media.astro`) while the
+  photograph settles from a 10% push; the figure is the observer's target and
+  stays unclipped, because Chrome intersects a target through its own
+  clip-path.
+- **Exits:** none. Sections scroll away. A scrubbed dim near the nav turned
+  the lower rows of the ivory ledger into pale ink on ivory while they were
+  still being read.
+- **Hovers, two kinds.** Images take the inspection lamp: a soft light under
+  the pointer, inside the frame and clipped by it (`.media::after`), one lamp
+  per group so a collage is lit as one surface, and the photograph leans in
+  4% on `.media__inner`. Ledger rows (`.ledger-row`: the services, How we
+  work) take a typographic hover instead: the name steps in and an accent rule
+  draws under it. A lamp on a wrapper wider than its image (the Emirates
+  column) spilled light over empty world.
+- **No hover while scrolling.** `html.is-scrolling` (set on every scroll event,
+  cleared 160ms after the last, so it spans Lenis' glide) turns off pointer
+  events on the body. Without it, every photo and ledger row that scrolled
+  under a still cursor lit, leaned in and faded out in turn (five lamps, two
+  images, all four service rows on one pass down the home page), which read as
+  the page flickering.
+- **Chain rows** (`data-reveal="row"`) are laid down left to right with a
+  `clip-path` inset, the way the route line beside them draws.
+- **How we work** (`data-reveal="survey"`, About) is a survey line drawn across
+  the three principles (down them on a phone) at a constant rate, each
+  surfacing as the line reaches it; the reveal computes when from each item's
+  offset along the line.
+- **Cards** (`data-reveal="shade"` on `.copy-shield`) come up behind their
+  copy ahead of the words: flat translucent panels with a gold hairline,
+  bleeding around the copy on desktop and sitting on the page margins with
+  inner padding on a phone (see DESIGN.md, Cards behind copy on the world).
+- **Photos recede** on the way out (`--recede`, scrubbed: 5% smaller, 40%
+  dimmer), through the individual `scale` and `filter` properties.
 
 ### Where the clips sit in the scroll
 
-Camera anchors are measured where a `[data-cam]` element sits centred in the
-viewport, so a zero-height `.pass--mark` placed beside a section is an anchor
-pinned to that section's edge. The home page uses marks and three short passes
-to time the clips against the copy, and nothing else:
+Each clip has a **pinned chapter**, an `.interlude` in `index.astro`: a section
+`100svh + --pin` tall whose stage is `position: sticky` and one screen tall, so
+the screen holds while the scroll runs the clip. Native sticky, not a JS pin:
+it is composited, so it cannot jank, and Lenis scrolls the window natively.
+The camera moves only between chapters and holds still through each one, and
+nothing scrolls across a clip, because nothing scrolls while it plays.
 
-| in document order | anchor | what it does |
-|---|---|---|
-| `#limestone` | `rim` | the chapter, centred |
-| `.pass--gap` (40vh) | | the camera tilts off the benches toward open sky |
-| mark | `clinkerIn` | the shaft is fully lit; the nodules begin to fall |
-| `#clinker` | `clinkerHold` | nodules mid-fall with the chapter centred |
-| mark | `clinkerOut` | the nodules have fallen out as the chapter leaves |
-| mark | `vesselIn` | the vessel is live from 0.12 (the first half second is a keel line) |
-| `.pass--build` (90vh) | | it draws itself against the sky before the chain's heading comes up |
-| `.chain` | `vesselBuilt` | finished, with the chain centred |
-| mark | `vesselHold` | still finished: the hold spans the chain's lower half |
-| `.pass--run` (60vh) | `vesselRun` | it comes apart as the Incoterms leave the top |
-| mark | `vesselOut` | gone, before the Emirates arrive |
+A camera anchor is where a `[data-cam]` element sits centred in the viewport,
+or, with `data-cam-at="f"`, where its top edge crosses `f` of the viewport
+height. Inside a chapter the marks are positioned at fractions of the pin
+(`--f`), so a stop is timed against the clip, not the layout.
 
-The previous layout did the same job with six tall spacers that added up to
-592vh of page with nothing on it; this is 190vh, and the page is a third
-shorter. Adjacent marks (`clinkerOut`, `vesselIn`) share a camera pose so the
-camera is never asked for a step between two anchors a pixel apart.
+| mark | at | clipT | what happens |
+|---|---|---|---|
+| `#clinker` | centred | | the chapter (photographs, like limestone); the camera starts climbing as it leaves |
+| `vesselIn` | top at 0.7 | 0.04 | halfway up; the keel flashes and draws as the chapter slides in |
+| `vesselPin` | pin 0 | 0.24 | clear sky; the screen holds; the hull forms and the copy rises in |
+| `vesselEnd` | pin 1 (160svh) | 0.97 | it has played straight through: complete at 0.66, broken up by the end |
+| `.chain.is-light` | centred | | the services ledger on the page's one ivory plate; the camera comes back down behind it |
+
+There is no hold in the clip: a pause in the middle read as the clip stalling
+before it had finished. The copy (`data-scene="0.04 0.72"`) arrives with the
+hull and stays through the build, and is drawn up out of frame as the hatches
+lift. Each block rises through a fixed cut line: its clip inset always equals
+the distance it has moved (`yPercent` 100 with `inset(0 0 100% 0)`), so the
+line stays put and the text comes up through it top first.
+
+The chapter copy is a GSAP timeline on the same scroll (`data-scene="in out"`,
+fractions of the pin, `scrub: true`), so copy and clip cannot drift apart.
 
 **`scrubTo` never seeks to exactly 0.** A clip that has not been seeked yet
 uploads a black frame however ready it reports itself, so the first stop of a
@@ -325,36 +399,42 @@ clip drew nothing until the reader had scrolled a little past it. The floor is
 
 ### The backdrop clips
 
-Two clips sit behind the clinker and supply-chain chapters: nodules falling
-through a shaft of light, and a bulk carrier drawing itself as a wireframe.
-Both are line art and light on pure black, and both animate themselves on and
-off inside their own four seconds.
+One clip sits behind the supply-chain chapter: a bulk carrier drawing itself
+as a wireframe, line art and light on pure black, that builds and comes apart
+inside its own four seconds. (A second, nodules falling through a shaft of
+light, played behind the clinker chapter until clinker was set like limestone,
+with photographs, so the two commodities read as equals. The file is kept in
+`media-archive/`, out of the deploy.)
 
-**There is no transition.** That is the point of the current design. Because
-the clips open and close on black, and black keys out, the clip's own entrance
-and exit are the handoff. `drawClip()` renders one fullscreen quad over the
-finished world and nothing else happens.
+**An on-screen video, screen-blended.** The clip is a real `<video>` in
+`.backdrop`, a fixed layer between the world canvas and the page that is
+`mix-blend-mode: screen`, so the clip's black ground drops out and only the
+line art lands on the sky. `world.js` places, fades and scrubs it every frame
+(`updateClip`, run before the world's idle throttle so a held camera never
+halves the scrub rate). The blend sits on the layer, not the video: a fixed
+element is its own stacking context, and a blend inside it would only reach
+the empty layer.
 
-**Keyed on brightness, not blended additively.** Additive suits glowing line
-art but makes a solid object translucent, and one clip is lit rock: you could
-see the terrain through the stones. The key is
-`smoothstep(0.015, 0.20, max(r, g, b))`, which gives both cases, since a bright
-surface keys to opaque and a dim glow keys to a soft blend, which is what
-additive did anyway. `max()` rather than perceptual luma, or saturated gold
-lines key too weakly.
+It used to be drawn inside the WebGL pass as a `VideoTexture` from a hidden
+one-pixel element, and that is what failed in Safari: after a few minutes on
+the page Safari stops decoding a video nobody can see, and the ship never came
+back. A visible video is one the browser itself keeps, and restores when it
+returns to view. Checked after three minutes idle on the hero in WebKit and
+Chrome. If the browser does let it go entirely (`readyState` 0 when the
+chapter needs it), it is reloaded, at most every three seconds.
 
-**Placed, not full-bleed.** Each clip occupies a defined box, set in `PLACE` as
-a fraction of viewport width plus a centre. Aspect is preserved by computing the
-box in JS, so nothing is cropped or stretched. The clinker beam falls through
-the upper right with the quarry held down into the lower left; the vessel runs
-across a middle lane with the chapter's copy pushed out to either side of it.
-`sm` is the phone framing, and `dim` steps a clip back there, because a narrow
-viewport has no side lane and the copy has to sit over the clip rather than
-beside it.
-
-The centre column of `.chain__head` and `.chain__row` is deliberately empty:
-that is the lane the vessel travels down. Letting text sit under it made the
-text unreadable rather than layered.
+**Placed by the layout, not by coordinates.** The video is laid over the
+measured rect of a stage element, `.chain__ship` (`data-clip-stage="vessel"`,
+`PLACE` in `world.js`), which `index.astro` sizes to the clip's own 640:368
+proportions in a centred column: heading above, ship, copy below. So the gaps
+hold at every viewport. The ship is held where the stage sits once the
+chapter is pinned (its rect minus the sticky stage's offset), from the first
+keel line to the last frame, so it never moves; riding in with the section
+it slid up the screen and only settled when the pin began. It is shown only
+while its dark chapter covers that spot (`placeClip` gates it on the
+section's edges), so it is never drawn over the clinker chapter or the
+ledger. While it is up the pointer orbit and idle drift are cut to a tenth:
+a world swinging behind the clip made the artwork look pasted on.
 
 **Scroll is the transport.** The clips never play. `clipT` interpolates between
 stops and is written straight to `currentTime`, so stopping the scroll holds
@@ -373,20 +453,22 @@ frames actually presented, not by frame rate:
 v.requestVideoFrameCallback(function cb(){ n++; v.requestVideoFrameCallback(cb); });
 ```
 
-**`clipT` can plateau.** Two adjacent stops with the same `clipT` freeze the
-clip between them. The vessel uses this to finish building before the copy
-arrives, hold while it is read, and resume only once the reader has moved past.
+**The playhead runs linearly with the scroll and is not damped.** The camera
+eases into every stop (smoothstep) and follows through a damp; `clipT` does
+neither. Eased, a clip slowed to a dead stop at every mark; damped, it trailed
+the copy by a quarter of a second and gliding between the two clips ran the
+ship backwards through its build. Lenis already smooths the scroll. A hold is
+only where two adjacent stops name the same `clipT`, and the vessel holds at
+0.67, measured off the clip as the frame where it is complete. A stop with no
+`clipT` holds its neighbour's, so a clip fading in or out stands still.
 
-**Clips have depth.** The quad is drawn at an NDC depth derived from the
-camera's distance to its look target (`CLIP_DEPTH` per clip), with depth testing
-on, so terrain occludes it. Without this the nodules stopped dead against the
-terrace edge instead of falling behind it. It is computed from the projection
-rather than hardcoded, because a constant would silently stop occluding when
-the camera changes.
+**One seek in flight at a time.** Re-targeting `currentTime` every frame
+aborts the seek before it; `seeked` chases wherever the scroll has got to.
+Measured: the presented frame trails the scroll by 26ms of clip time (p50),
+under two of its frames.
 
 **Stops carry `layer` and `clipT`,** nothing else. No tint, no fog flattening:
-the world stays visible behind the artwork and is meant to, so the wireframe
-hangs inside the quarry rather than covering it.
+the world stays visible behind the artwork and is meant to.
 
 **Re-encoding a clip.** All-intra, low frame rate, and it must be black-backed
 with its own fade in and out or none of the above holds.
@@ -395,7 +477,7 @@ with its own fade in and out or none of the above holds.
 ffmpeg -y -i in.mp4 \
   -vf "minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1,scale=640:-2" \
   -an -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 26 -preset slow \
-  -g 1 -keyint_min 1 -bf 0 -sc_threshold 0 -movflags +faststart clip-clinker.mp4
+  -g 1 -keyint_min 1 -bf 0 -sc_threshold 0 -movflags +faststart clip-vessel.mp4
 ```
 
 Interpolating up and scaling down together is close to free: 238 frames at
@@ -406,14 +488,6 @@ The clips are not fetched until `World.whenReady` resolves: on a slow
 connection they otherwise compete with the model for bandwidth and hold the
 preloader up. A Save-Data visitor downloads neither, and the elements carry no
 `poster`, since a poster is fetched even under `preload="none"`.
-
-**The box may bleed off the top and bottom** (`placeClip` clamps only
-sideways). The clinker shaft runs the clip's full height, so a visible top edge
-is a hard line across the light; the box is set high enough that its top is
-above the viewport, and the `clinkerHold` camera looks low enough that the near
-terraces cover its foot. Where no camera framing can do that, a portrait phone
-having no spare height, each placement carries a `feather`: the clip thins out
-over its lowest stretch instead of ending on a line.
 
 **What was removed, and where it went.** Earlier rounds used photographic clips
 that had to be dissolved into the world, which needed a render target, a

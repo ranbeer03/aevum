@@ -48,7 +48,7 @@ Bulk mineral trading: cargoes move by truck inland and by dry-bulk vessel betwee
 
 ## Evidence on Hand
 
-- No imagery, no logo, no copy exists. Images will be licensed stock or AI-generated (prompts are a deliverable of this build).
+- No imagery, no logo, no copy exists. Images will be licensed stock or generated imagery (the image briefs are a deliverable of this build).
 - No client names, figures, or testimonials publishable today — future partner strip must not ship visible until names are cleared.
 - Contact details not yet provided — use clearly-marked placeholders that are trivial to swap.
 
