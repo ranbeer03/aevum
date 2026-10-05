@@ -12,16 +12,16 @@ import { commodities } from '../data/commodities.js';
 >
   <!-- ============================== hero -->
   <section class="page-hero" data-depth="Top" data-cam="rim">
-    <div class="container copy-shield">
+    <div class="container copy-shield" data-reveal="shade">
       <h1 class="page-hero__title">
         <span class="split-line" data-reveal><span class="split-inner">Two commodities.</span></span>
-        <span class="split-line" data-reveal style="--reveal-delay: 0.1s"><span class="split-inner">One supply chain.</span></span>
+        <span class="split-line" data-reveal style="--reveal-delay: 0.07s"><span class="split-inner">One supply chain.</span></span>
       </h1>
-      <p class="page-hero__sub lede" data-reveal style="--reveal-delay: 0.22s">
+      <p class="page-hero__sub lede" data-reveal style="--reveal-delay: 0.14s">
         Everything we trade is specified in writing and delivered against that
         specification, with independent inspection at handover.
       </p>
-      <nav class="page-hero__jump" aria-label="Commodities on this page" data-reveal style="--reveal-delay: 0.32s">
+      <nav class="page-hero__jump" aria-label="Commodities on this page" data-reveal style="--reveal-delay: 0.2s">
         {commodities.map((c) => (
           <a href={`#${c.slug}`} class="link-line">{c.name}
             <Arrow dir="down" />
@@ -34,8 +34,7 @@ import { commodities } from '../data/commodities.js';
   {commodities.map((c, i) => (
     <article
       id={c.slug}
-      class={`section commodity ${i % 2 === 1 ? 'is-light commodity--flip' : ''}`}
-      data-reveal={i % 2 === 1 ? 'plate' : undefined}
+      class={`section commodity ${i % 2 === 1 ? 'commodity--flip' : ''}`}
       data-cam={i === 0 ? 'seam' : 'benchWall'}
       data-depth={c.name}
     >
@@ -46,10 +45,9 @@ import { commodities } from '../data/commodities.js';
             <Media
               src={c.panelImage}
               alt={c.panelImageAlt}
-              class="commodity__media rake-media"
+              class="commodity__media"
               parallax="0.1"
               ratio="4 / 5"
-              vtName={`media-${c.slug}`}
               loading="eager"
               data-reveal="strata"
             />
@@ -64,7 +62,7 @@ import { commodities } from '../data/commodities.js';
         </div>
 
         <!-- the certificate -->
-        <div class={`commodity__doc ${i % 2 === 0 ? 'copy-shield' : ''}`}>
+        <div class="commodity__doc copy-shield" data-reveal="shade">
           <h2 data-reveal>{c.name}</h2>
           <p class="lede" data-reveal style="--reveal-delay: 0.08s">{c.intro}</p>
           <p class="commodity__body" data-reveal>{c.body}</p>
@@ -92,7 +90,7 @@ import { commodities } from '../data/commodities.js';
             <h3 class="commodity__facts-title">Applications</h3>
             <ul class="apps-list">
               {c.applications.map((a) => (
-                <li class="rake-row">{a}</li>
+                <li>{a}</li>
               ))}
             </ul>
           </div>

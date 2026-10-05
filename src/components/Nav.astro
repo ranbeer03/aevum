@@ -215,7 +215,7 @@ const current = (href) =>
   }
   .drawer:not(.is-open) .split-inner { transform: translateY(110%); transition-delay: 0s; }
   /* The drawer's own open state. It used to borrow `.in` from the page reveal
-     system, which no longer reaches the persisted nav. */
+     system, which does not reach the nav. */
   .drawer.is-open .split-inner { transform: translateY(0); }
   .drawer__cta { align-self: flex-start; }
 

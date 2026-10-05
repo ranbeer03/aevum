@@ -39,16 +39,16 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
   <section class="hero" data-depth="Top" data-cam="approach">
     <div class="hero__scrim" aria-hidden="true"></div>
 
-    <div class="container hero__content" data-exit>
+    <div class="container hero__content">
       <h1 class="hero__title">
         <span class="split-line" data-reveal><span class="split-inner">The raw materials</span></span>
-        <span class="split-line" data-reveal style="--reveal-delay: 0.1s"><span class="split-inner">of cement.</span></span>
+        <span class="split-line" data-reveal style="--reveal-delay: 0.07s"><span class="split-inner">of cement.</span></span>
       </h1>
-      <p class="hero__sub" data-reveal style="--reveal-delay: 0.24s">
+      <p class="hero__sub" data-reveal style="--reveal-delay: 0.14s">
         Aevum FZE supplies cement clinker and limestone across the United Arab
         Emirates, from the quarry gate to the grinding mill.
       </p>
-      <div class="hero__actions" data-reveal style="--reveal-delay: 0.36s">
+      <div class="hero__actions" data-reveal style="--reveal-delay: 0.2s">
         <a href="/contact" class="btn btn--solid">Enquire</a>
         <span class="hero__secondary">
           <a href="/commodities#clinker" class="btn">Cement Clinker</a>
@@ -65,8 +65,8 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
 
   <!-- ============================== strata: limestone -->
   <section id="limestone" class="section chapter" data-depth="Limestone" data-cam="rim">
-    <div class="container chapter__grid" data-exit>
-      <div class="chapter__text copy-shield">
+    <div class="container chapter__grid">
+      <div class="chapter__text copy-shield" data-reveal="shade">
         <h2 data-reveal>Limestone</h2>
         <p class="lede" data-reveal style="--reveal-delay: 0.08s">
           Quarried from the Hajar range, which is why the east coast of the
@@ -78,15 +78,14 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
           <Arrow />
         </a>
       </div>
-      <div class="chapter__media">
-        <a href="/commodities#limestone" class="rake-media chapter__primary-link" aria-label="Limestone grades and specifications">
+      <div class="chapter__media" data-rake>
+        <a href="/commodities#limestone" class="chapter__primary-link" aria-label="Limestone grades and specifications">
           <Media
             src="/media/limestone-panel.jpg"
             alt="Terraced limestone quarry face in the Hajar mountains at first light"
             class="chapter__primary"
             parallax="0.12"
             ratio="4 / 5"
-            vtName="media-limestone"
             data-reveal="strata"
           />
         </a>
@@ -103,17 +102,13 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
     </div>
   </section>
 
-  <!-- The camera tilts off the benches toward open sky across this short gap
-       and the light shaft fades up as it goes. The clinker chapter arrives while
-       that is still happening; the mark right before it is where the shaft is
-       fully lit and the nodules begin to fall. See STOPS in world.js. -->
-  <div class="pass pass--gap" aria-hidden="true"></div>
-  <div class="pass pass--mark" data-cam="clinkerIn" aria-hidden="true"></div>
-
-  <!-- ============================== kiln depth: clinker, over clip A -->
-  <section id="clinker" class="section chapter chapter--flip" data-depth="Cement Clinker" data-cam="clinkerHold">
-    <div class="container chapter__grid" data-exit>
-      <div class="chapter__text copy-shield">
+  <!-- ============================== kiln depth: clinker
+       The same chapter as limestone, mirrored: the two commodities carry the
+       same weight, so they are set the same way. The camera swings round to
+       the east face, where the kiln ember lights the benches. -->
+  <section id="clinker" class="section chapter chapter--flip" data-depth="Cement Clinker" data-cam="seam">
+    <div class="container chapter__grid">
+      <div class="chapter__text copy-shield" data-reveal="shade">
         <h2 data-reveal>Cement Clinker</h2>
         <p class="lede" data-reveal style="--reveal-delay: 0.08s">
           Limestone and clay sintered at 1,450&nbsp;°C into the nodules that
@@ -125,15 +120,14 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
           <Arrow />
         </a>
       </div>
-      <div class="chapter__media">
-        <a href="/commodities#clinker" class="rake-media chapter__primary-link" aria-label="Cement clinker grades and specifications">
+      <div class="chapter__media" data-rake>
+        <a href="/commodities#clinker" class="chapter__primary-link" aria-label="Cement clinker grades and specifications">
           <Media
             src="/media/clinker-panel.jpg"
             alt="Stockpile of cement clinker under dusk floodlight"
             class="chapter__primary"
             parallax="0.12"
             ratio="4 / 5"
-            vtName="media-clinker"
             data-reveal="strata"
           />
         </a>
@@ -150,30 +144,45 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
     </div>
   </section>
 
-  <!-- The nodules have fallen out by the time the chapter has left. The camera
-       then tilts to open sky and the vessel starts drawing itself over this
-       pass, so it is already building when the chain's heading comes up. It is
-       finished (vesselBuilt) with the chain centred, and the mark after the
-       section holds that frame until the copy has been read. -->
-  <div class="pass pass--mark" data-cam="clinkerOut" aria-hidden="true"></div>
-  <div class="pass pass--mark" data-cam="vesselIn" aria-hidden="true"></div>
-  <div class="pass pass--build" aria-hidden="true"></div>
-
-  <!-- ============================== the chain, over clip B -->
-  <section class="section chain" data-depth="Supply Chain" data-cam="vesselBuilt">
-    <div class="container" data-exit>
-      <div class="chain__head copy-shield">
-        <h2 data-reveal>One chain, quarry to mill</h2>
-        <p class="lede chain__lede" data-reveal style="--reveal-delay: 0.08s">
+  <!-- ============================== the chain: the vessel, a pinned chapter
+       The camera lifts into clear sky as clinker leaves; the keel is drawn as
+       the chapter slides in, then the screen holds while the vessel plays
+       straight through: the heading and its copy rise out of a cut as the
+       hull forms, stay while it completes, and are drawn up out of the frame
+       as it comes apart. -->
+  <section class="interlude interlude--vessel" data-depth="Supply Chain">
+    <span class="pass" data-cam="vesselIn" data-cam-at="0.3" aria-hidden="true"></span>
+    <span class="pass" data-cam="vesselPin" data-cam-at="0" aria-hidden="true"></span>
+    <span class="pass" data-cam="vesselEnd" data-cam-at="0" style="--f: 1" aria-hidden="true"></span>
+    <div class="interlude__stage">
+      <div class="container interlude__frame chain__head" data-scene="0.04 0.72">
+        <h2 class="interlude__title">One chain, quarry to mill</h2>
+        <!-- the ship's place in the column: world.js draws the clip into this
+             box's measured rect, so the layout, not a coordinate, decides
+             where the ship sits -->
+        <div class="chain__ship" data-clip-stage="vessel" aria-hidden="true"></div>
+        <p class="lede chain__lede">
           Aevum holds every link in that chain. A delay at the crusher, the
           weighbridge or the berth is ours to resolve.
         </p>
       </div>
+    </div>
+  </section>
+
+  <!-- ============================== the services: the page's one ivory plate
+       After two dark chapters in the sky the page opens out into a ledger:
+       what Aevum actually does, set like a document. The camera comes back
+       down to the quarry behind it, so the long move is never seen. -->
+  <!-- solid from its first pixel (no plate reveal): it follows a dark pinned
+       chapter, and the band sliding up whole is the turn of the page -->
+  <section class="section chain is-light" data-depth="What We Handle" data-cam="spiral">
+    <div class="container">
+      <h2 class="chain__heading" data-reveal>What we handle</h2>
       <div class="chain__rows">
         <span class="chain__line" data-draw aria-hidden="true"></span>
         <ul class="chain__list">
           {services.map((s) => (
-            <li class="chain__row rake-row" data-station data-reveal="row">
+            <li class="chain__row ledger-row" data-station data-reveal="row">
               <h3 class="chain__name">{s.name}</h3>
               <p class="chain__copy">{s.copy}</p>
             </li>
@@ -192,16 +201,10 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
     </div>
   </section>
 
-  <!-- the vessel holds while the chain is read, comes apart as the section
-       scrolls off, and is gone before the Emirates arrive -->
-  <div class="pass pass--mark" data-cam="vesselHold" aria-hidden="true"></div>
-  <div class="pass pass--run" data-cam="vesselRun" aria-hidden="true"></div>
-  <div class="pass pass--mark" data-cam="vesselOut" aria-hidden="true"></div>
-
   <!-- ============================== the emirates -->
   <section class="section emirates" data-depth="The Emirates" data-cam="basin">
-    <div class="container emirates__grid" data-exit>
-      <div class="emirates__content copy-shield">
+    <div class="container emirates__grid">
+      <div class="emirates__content copy-shield" data-reveal="shade">
         <h2 data-reveal>Grounded in the Emirates</h2>
         <p class="lede" data-reveal style="--reveal-delay: 0.08s">
           The Hajar range holds some of the richest limestone reserves in the
@@ -217,7 +220,7 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
           </ul>
         </div>
       </div>
-      <div class="rake-media">
+      <div class="emirates__media-col">
         <Media
           src="/media/quarry-hajar.jpg"
           alt="Working limestone quarry in the Hajar mountains at golden hour"
@@ -247,20 +250,32 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
 </Base>
 
 <style>
-  /* Handoff spacers. A mark has no height: it is a camera anchor pinned to the
-     edge of the section beside it, so a stop lands exactly where a chapter
-     begins or ends. The others are the scroll a clip needs to run. The old
-     spacers added up to 592vh of page with nothing on it; these are 200vh. */
-  .pass { pointer-events: none; }
-  .pass--mark { height: 0; }
-  .pass--gap { height: 40vh; }    /* benches to open sky, the light shaft rising */
-  .pass--build { height: 90vh; }  /* the vessel draws itself before the chain arrives */
-  .pass--run { height: 60vh; }    /* and comes apart as the chain leaves */
-  @media (max-width: 860px) {
-    .pass--gap { height: 28vh; }
-    .pass--build { height: 64vh; }
-    .pass--run { height: 44vh; }
+  /* Camera marks: zero height, each a line a chapter edge crosses
+     (data-cam-at in motion.js). */
+  .pass { height: 0; pointer-events: none; }
+
+  /* The pinned chapter. The section is the scroll and its stage is sticky
+     and one screen tall, so the screen holds while the scroll runs the clip;
+     --pin is how much scroll the clip gets. Marks sit on the section at
+     fractions of the pin (--f). svh throughout, so a phone's
+     toolbar showing and hiding never changes the length of the pin. */
+  .interlude {
+    --pin: 160svh;
+    position: relative;
+    height: calc(100svh + var(--pin));
   }
+  .interlude > .pass { position: absolute; left: 0; top: calc(var(--f, 0) * var(--pin)); }
+  .interlude__stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    display: flex;
+    align-items: center;
+  }
+  /* no flex-grow on the frame: grown, it filled the row and its auto margins,
+     which are the page gutter, collapsed to nothing */
+  .interlude__title { font-size: var(--size-h1); }
+
 
   /* -------- hero: type floating over the live world */
   .hero {
@@ -364,35 +379,34 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
   .chapter { position: relative; z-index: 2; }
 
   /* -------- the chain: route line + stations */
-  /* The clip animates through the middle of this section, so the copy is held
-     out to either side of it. The centre column is deliberately empty: it is
-     the lane the vessel travels down, and letting text sit under it made the
-     text unreadable rather than layered. */
+  /* The ship chapter: one centred column, heading over the ship, copy under
+     it. The reading order is the build order: what this is, the vessel, why
+     it matters. */
   .chain__head {
-    display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 5fr);
-    gap: clamp(1rem, 2.5vw, 2.5rem);
-    margin-bottom: var(--space-block);
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    /* tight: the clip's own frame carries about a sixth of its height in dark
+       margin above and below the hull, which is the visible gap */
+    gap: clamp(0.25rem, 1vh, 0.75rem);
   }
+  .chain__ship {
+    width: min(100%, 46rem, calc(46svh * 640 / 368));
+    aspect-ratio: 640 / 368;
+  }
+  .chain__lede { max-width: 36ch; }
+  /* -------- the services ledger, on the ivory plate */
+  .chain__heading { font-size: var(--size-h1); margin-bottom: var(--space-block); }
   .chain__rows { position: relative; }
-  .chain__rows::before {
-    content: "";
-    position: absolute;
-    inset: -0.5rem -1.5rem;
-    z-index: -1;
-    background: linear-gradient(90deg, rgba(7, 21, 16, 0.5), rgba(7, 21, 16, 0.2) 60%, transparent);
-    border-radius: 1.5rem;
-    pointer-events: none;
-  }
-  /* the route line rides the same seam as the page vein on wide screens */
+  /* the route line rides down the station dots */
   .chain__line {
     position: absolute;
     left: 5px;
     top: 0;
     width: 2px;
     height: 100%;
-    background: var(--gold);
+    background: var(--accent);
     transform: scaleY(0);
     transform-origin: top;
   }
@@ -400,14 +414,13 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
   .chain__row {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 4fr) minmax(0, 3fr) minmax(0, 5fr);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     gap: clamp(0.75rem, 2vw, 2rem);
     padding: clamp(1.4rem, 2.6vw, 2.1rem) 0 clamp(1.4rem, 2.6vw, 2.1rem) clamp(1.8rem, 4vw, 3.2rem);
     border-top: 1px solid var(--line);
   }
   .chain__row:last-child { border-bottom: 1px solid var(--line); }
-  /* station node: fills when the drawn line reaches it (rake-row clips at
-     overflow, so the dot sits fully inside the row box) */
+  /* station node: fills when the drawn line reaches it */
   .chain__row::before {
     content: "";
     position: absolute;
@@ -416,18 +429,18 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    border: 1px solid var(--gold);
-    background: var(--forest-900);
-    transition: background-color 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
+    border: 1px solid var(--accent);
+    background: var(--ivory);
+    transition: background-color 0.9s var(--ease-soft);
   }
-  .chain__row.passed::before {
-    background: var(--gold);
-    box-shadow: 0 0 12px rgba(198, 169, 108, 0.5);
+  .chain__row.passed::before { background: var(--accent); }
+  @media (hover: hover) {
+    .chain__row:hover::before { background: var(--accent); transition-duration: 0.9s; transition-delay: 80ms; }
   }
-  .chain__name { font-size: var(--size-h3); transition: color 0.5s var(--ease-out); }
-  .chain__row.passed .chain__name { color: var(--ivory); } /* status by brightness, not by the interactive colour */
-  .chain__copy { grid-column: 3; color: var(--text-dim); max-width: 46ch; }
-  .chain__lede { grid-column: 3; }
+  /* status by weight of ink, not by the interactive colour */
+  .chain__name { font-size: var(--size-h3); color: var(--text-dim); }
+  .chain__row.passed .chain__name { color: var(--text); }
+  .chain__copy { color: var(--text-dim); max-width: 46ch; }
   .chain__terms {
     margin-top: var(--space-block);
     display: flex;
@@ -497,10 +510,10 @@ const ports = ['Fujairah', 'Dibba', 'Khor Fakkan', 'Mina Saqr', 'Jebel Ali'];
 
   /* -------- responsive */
   @media (max-width: 860px) {
-    .chapter__grid, .chain__head, .chain__row { grid-template-columns: 1fr; }
-    .chain__lede, .chain__copy { grid-column: 1; }
+    .chapter__grid, .chain__row { grid-template-columns: 1fr; }
     .chapter--flip .chapter__grid > .chapter__text { order: 1; }
     .chapter--flip .chapter__grid > .chapter__media { order: 2; }
+
     .chapter__primary-link { width: 100%; }
     .chapter :global(.chapter__secondary) { width: 52%; }
     .chain__row { gap: 0.6rem; }

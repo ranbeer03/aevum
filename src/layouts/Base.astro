@@ -48,7 +48,16 @@ const canonical = new URL(Astro.url.pathname, site.domain).href;
     <meta property="og:image" content={new URL('/media/og.jpg', site.domain).href} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#0d221a" />
-    <ClientRouter />
+    <!-- Client-side page swaps WITHOUT the browser's View Transitions. The
+         site uses none of what they offer (motion.js runs every exit and
+         entrance, nothing is named), and the snapshot step is what flickered
+         in Safari: it captures the WebGL world blank, so the background
+         flashed out for a frame on every navbar click. Hiding the API makes
+         Astro take its own swap path, which fires the same lifecycle events.
+         fallback="swap", not "none": with "none" and no View Transitions,
+         Astro stops routing on the client and every link reloads the page. -->
+    <script is:inline>document.startViewTransition = undefined;</script>
+    <ClientRouter fallback="swap" />
     <noscript>
       <style>
         [data-reveal], [data-reveal="row"] > *, .split-line > .split-inner {
@@ -98,15 +107,15 @@ const canonical = new URL(Astro.url.pathname, site.domain).href;
     <div class="world" aria-hidden="true" transition:persist="world">
       <canvas id="world-canvas"></canvas>
     </div>
-    <!-- Backdrop clips. Texture sources only: world.js draws them inside the
-         WebGL pass, so the handoff is a blend in one canvas rather than a
-         second full-screen layer over it. Skipped on the devices that skip
-         the model. -->
+    <!-- The backdrop clip: an on-screen video that world.js places, fades
+         and scrubs, screen-blended onto the world (see .backdrop). Skipped on
+         the devices that skip the model. -->
     <div class="backdrop" aria-hidden="true" transition:persist="backdrop">
-      <video id="clip-clinker" class="backdrop__clip" muted playsinline preload="none" src="/media/video/clip-clinker.mp4"></video>
       <video id="clip-vessel" class="backdrop__clip" muted playsinline preload="none" src="/media/video/clip-vessel.mp4"></video>
     </div>
-    <Nav transition:persist="site-nav" />
+    <!-- not persisted: each page renders its own header so the active link is
+         right; motion.js rebinds it per page -->
+    <Nav />
     <main id="main">
       <slot />
     </main>

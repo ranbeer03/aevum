@@ -29,9 +29,9 @@ const pillars = [
     <div class="container">
       <h1 class="page-hero__title">
         <span class="split-line" data-reveal><span class="split-inner">Named for</span></span>
-        <span class="split-line" data-reveal style="--reveal-delay: 0.12s"><span class="split-inner">the long term.</span></span>
+        <span class="split-line" data-reveal style="--reveal-delay: 0.07s"><span class="split-inner">the long term.</span></span>
       </h1>
-      <p class="page-hero__sub lede" data-reveal style="--reveal-delay: 0.26s">
+      <p class="page-hero__sub lede" data-reveal style="--reveal-delay: 0.14s">
         <em>Aevum</em> is Latin for an age, or a span of time without end. We
         chose it for a business built on stone.
       </p>
@@ -43,13 +43,13 @@ const pillars = [
     <div class="container who__grid">
       <div class="who__text">
         <h2 data-reveal>A specialist, by design</h2>
-        <div class="who__copy" data-reveal style="--reveal-delay: 0.1s">
-          <p>
+        <div class="who__copy">
+          <p data-reveal style="--reveal-delay: 0.1s">
             Aevum FZE is a trading company registered in the United Arab
             Emirates. We buy and sell cement clinker and limestone, and we
             manage the supply chains that move them.
           </p>
-          <p>
+          <p data-reveal style="--reveal-delay: 0.18s">
             We work at the quarries, clinker lines and bulk terminals of the
             Emirates, for producers and buyers who need cargo on specification
             and on schedule without coordinating several intermediaries to get
@@ -74,14 +74,20 @@ const pillars = [
   <section class="section pillars" data-depth="How We Work" data-cam="benchWall">
     <div class="container">
       <h2 data-reveal>How we work</h2>
-      <ul class="pillars__list copy-shield">
-        {pillars.map((p, i) => (
-          <li class="pillars__row" data-reveal style={`--reveal-delay: ${i * 0.08}s`}>
-            <h3 class="pillars__name">{p.name}</h3>
-            <p class="pillars__copy">{p.copy}</p>
-          </li>
-        ))}
-      </ul>
+      <!-- A survey line: drawn across the three principles (down them on a
+           phone), each surfacing as the line reaches it. motion.js, "survey". -->
+      <div class="pillars__survey copy-shield" data-reveal="survey">
+        <span class="pillars__line" aria-hidden="true"></span>
+        <ul class="pillars__list">
+          {pillars.map((p) => (
+            <li class="pillars__item">
+              <span class="pillars__node" aria-hidden="true"></span>
+              <h3 class="pillars__name">{p.name}</h3>
+              <p class="pillars__copy">{p.copy}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   </section>
 
@@ -130,17 +136,56 @@ const pillars = [
   }
 
   .pillars h2 { margin-bottom: var(--space-block); }
-  .pillars__list { list-style: none; }
-  .pillars__row {
-    display: grid;
-    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
-    gap: clamp(1.5rem, 4vw, 4rem);
-    padding-block: clamp(1.8rem, 3.5vw, 2.8rem);
-    border-top: 1px solid var(--line);
+  /* the survey: a gold line across the top, a marker where each principle
+     stands on it, the principles as three columns below */
+  .pillars__survey { position: relative; padding-top: 2.75rem; }
+  .pillars__line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold), rgba(198, 169, 108, 0.35));
+    transform-origin: left;
+    transform: scaleX(var(--draw, 1));
   }
-  .pillars__row:last-child { border-bottom: 1px solid var(--line); }
-  .pillars__name { font-size: var(--size-h3); }
-  .pillars__copy { color: var(--text-dim); max-width: 58ch; font-size: var(--size-body-lg); }
+  .pillars__list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(2rem, 4.5vw, 5rem);
+  }
+  .pillars__item { position: relative; }
+  .pillars__node {
+    position: absolute;
+    left: 0;
+    top: calc(-2.75rem - 4px);
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 5px rgba(198, 169, 108, 0.14);
+  }
+  .pillars__name { font-size: var(--size-h2); margin-bottom: 1.1rem; }
+  .pillars__copy {
+    color: var(--text-dim);
+    font-size: var(--size-body-lg);
+    max-width: 34ch;
+    transition: color 1s var(--ease-soft);
+  }
+  @media (hover: hover) {
+    .pillars__item:hover .pillars__copy { color: var(--text); transition-duration: 0.7s; transition-delay: 80ms; }
+  }
+
+  /* hidden until drawn (motion.js plays the survey and adds .in) */
+  [data-reveal="survey"] { opacity: 1; transform: none; --draw: 0; --shade: 0; }
+  [data-reveal="survey"] .pillars__node { transform: scale(0); }
+  [data-reveal="survey"] .pillars__name,
+  [data-reveal="survey"] .pillars__copy { opacity: 0; transform: translateY(1.1rem); }
+  [data-reveal="survey"].in { --draw: 1; --shade: 1; }
+  [data-reveal="survey"].in .pillars__node { transform: none; }
+  [data-reveal="survey"].in .pillars__name,
+  [data-reveal="survey"].in .pillars__copy { opacity: 1; transform: none; }
 
   .trade__grid {
     display: grid;
@@ -151,6 +196,22 @@ const pillars = [
   .trade__body { display: flex; flex-direction: column; gap: 2rem; align-items: flex-start; }
 
   @media (max-width: 860px) {
-    .who__grid, .pillars__row, .trade__grid { grid-template-columns: 1fr; }
+    .who__grid, .trade__grid { grid-template-columns: 1fr; }
+    /* the line runs down the left of the principles instead */
+    /* inside its card: the card's own padding, plus a lane for the line */
+    .pillars__survey { padding: 1.6rem 1.15rem 1.6rem 3rem; }
+    .pillars__line {
+      right: auto;
+      top: 1.6rem;
+      bottom: 1.6rem;
+      left: 1.25rem;
+      width: 1px;
+      height: auto;
+      background: linear-gradient(180deg, var(--gold), rgba(198, 169, 108, 0.35));
+      transform-origin: top;
+      transform: scaleY(var(--draw, 1));
+    }
+    .pillars__list { grid-template-columns: 1fr; gap: 2.6rem; }
+    .pillars__node { top: 0.55em; left: calc(-1.75rem - 4px); }
   }
 </style>

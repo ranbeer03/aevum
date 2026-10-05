@@ -83,7 +83,7 @@ const STOPS = {
   // closing on it, benches beginning to read
   rim:       { pos: [39.3, 12.5, 1.9],  look: [9, 8.1, -32.8],   fog: 0.0065, deep: 0.18, kiln: 0.05 },
   // in close along the west bench walls
-  benchWall: { pos: [-34, 10, -6],  look: [8, 4, -32],   fog: 0.0085, deep: 0.34, kiln: 0.15 },
+  benchWall: { pos: [-26.5, 29, 2],  look: [8, 4, -32],   fog: 0.0085, deep: 0.34, kiln: 0.15 },
   // round to the east face, low and raking
   seam:      { pos: [44, 12, -4],   look: [4, 3, -32],   fog: 0.0095, deep: 0.52, kiln: 0.5 },
   // looking along the haul roads from behind the hill
@@ -94,48 +94,28 @@ const STOPS = {
   floor:     { pos: [22, 28.9, 5.6],    look: [6.9, 9, -9.2],  fog: 0.0120, deep: 0.92, kiln: 1.00 },
 
   /* ---- the backdrop clips ---------------------------------------------
-     No tint and no fog flattening here any more. The clips are composited
-     additively over the finished world, so the quarry stays visible behind the
-     artwork and is meant to: the wireframe hangs inside the scene rather than
-     covering it. `layer` names which clip is showing; `clipT` is where in that
-     clip's own four seconds this scroll position sits.                      */
+     `layer` names which clip is showing at a stop; `clipT` is where in that
+     clip's own four seconds the stop sits. The playhead runs linearly with the
+     scroll between stops (see sampleTarget), so two stops with the same clipT
+     are a hold and anything else is playback at a steady rate.
 
-  // Clinker. Only a corner of the quarry is in frame, and the clip sits among
-  // the terraces rather than in front of them, so the nodules fall behind the
-  // rock instead of stopping against its edge.
-  // The shaft is already the layer at clinkerIn, a third of a second in, where
-  // it is fully lit and the nodules have not yet entered: so the shaft fades
-  // up during the tilt to the sky and the fall only starts once the chapter is
-  // in. The hold looks LOW enough that the
-  // near terraces fill the lower right of the frame, which is what the beam's
-  // foot disappears behind.
-  clinkerIn:   { pos: [24.7, 17.9, -16.5],  look: [-8.3, 32.7, -29.2],  fog: 0.0080, deep: 0.44, kiln: 0.50, layer: 'clinker', clipT: 0.08,
-                 sm: { pos: [42, 22, 14],  look: [-4, 34, -28] } },
-  clinkerHold: { pos: [52, 21, 2],   look: [-12, 17, -30],  fog: 0.0090, deep: 0.52, kiln: 0.62, layer: 'clinker', clipT: 0.50,
-                 sm: { pos: [46, 19, 0],   look: [-6, 23, -30] } },
-  // clinkerOut and vesselIn are adjacent marks a pixel apart (one closes the
-  // clinker clip, the other opens the vessel clip), so they share a pose:
-  // the camera must not be asked for a step between them.
-  clinkerOut:  { pos: [34, 18, -46], look: [4, 30, -30],  fog: 0.0095, deep: 0.62, kiln: 0.56, layer: 'world', clipT: 1.00,
-                 sm: { pos: [30, 17, -46], look: [4, 32, -30] } },
+     Measured off the clips, frame by frame:
+       vessel   keel line 0.08 to 0.18, hull 0.19 to 0.36, complete 0.66,
+                hatches lift 0.71, gone 1.00                                   */
 
-  // Supply chain. The camera tilts off the quarry entirely and faces open sky,
-  // so the vessel draws itself against nothing, then the world comes back.
-  // The vessel is live from its first mark and starts 0.12 in, past the half
-  // second where the clip is only a keel line, so a hull is already drawn by
-  // the time the chain's heading comes up. clipT plateaus across vesselBuilt
-  // and vesselHold: the ship is finished with the chain centred, holds while
-  // it is read, and comes apart as the section leaves.
-  vesselIn:    { pos: [34, 18, -46], look: [4, 30, -30],   fog: 0.0095, deep: 0.66, kiln: 0.60, layer: 'vessel', clipT: 0.12,
-                 sm: { pos: [30, 17, -46], look: [4, 32, -30] } },
-  vesselBuilt: { pos: [32, 22, -60], look: [6, 52, -34],   fog: 0.0100, deep: 0.74, kiln: 0.55, layer: 'vessel', clipT: 0.46,
-                 sm: { pos: [28, 21, -60], look: [6, 54, -34] } },
-  vesselHold:  { pos: [30, 24, -72], look: [4, 56, -34],   fog: 0.0100, deep: 0.76, kiln: 0.50, layer: 'vessel', clipT: 0.46,
-                 sm: { pos: [26, 23, -72], look: [4, 58, -34] } },
-  vesselRun:   { pos: [28, 22, -68], look: [5, 44, -32],   fog: 0.0095, deep: 0.70, kiln: 0.52, layer: 'vessel', clipT: 1.00,
-                 sm: { pos: [25, 21, -68], look: [5, 46, -32] } },
-  vesselOut:   { pos: [26, 19, -62], look: [5, 24, -30],   fog: 0.0085, deep: 0.62, kiln: 0.50, layer: 'world', clipT: 1.00,
-                 sm: { pos: [24, 18, -62], look: [5, 26, -30] } },
+  // The vessel has a pinned chapter (an .interlude in index.astro): the
+  // screen holds while the clip plays from its own start to its own end, and
+  // the camera holds with it, so there is one motion at a time. In is the
+  // chapter's top crossing the screen, Pin and End the ends of the hold.
+  // In clear sky, nothing in frame but the vessel. It plays straight
+  // through, building, complete and coming apart, at one steady rate: a
+  // hold in the middle read as the clip stalling before it had finished.
+  // halfway up as the chapter slides in, so the climb from the benches is
+  // spread over the clinker chapter leaving and this one arriving. The clip
+  // is on its first frames here, already in its final place.
+  vesselIn:    { pos: [39, 12, -5],  look: [4, 30, -14], fog: 0.0095, deep: 0.64, kiln: 0.55, layer: 'vessel', clipT: 0.02 },
+  vesselPin:   { pos: [34, 12, -6],  look: [5, 52, 0],  fog: 0.0100, deep: 0.74, kiln: 0.55, layer: 'vessel', clipT: 0.24 },
+  vesselEnd:   { pos: [34, 12, -6],  look: [5, 52, 0],  fog: 0.0100, deep: 0.76, kiln: 0.50, layer: 'vessel', clipT: 0.97 },
 };
 const FALLBACK = 'rim';
 
@@ -546,7 +526,6 @@ const state = {
   grade: { fog: 0.011, deep: 0, kiln: 0, clipT: 0 },
   tGrade: { fog: 0.011, deep: 0, kiln: 0, clipT: 0 },
   clips: null,                        // [videoA, videoB], set by motion.js
-  clipPass: null,                     // the additive backdrop-clip quad
   blendFrom: 'world',                 // which source this stop leaves
   blendTo: 'world',                   // and which it arrives at
   blendT: 0,                          // raw scroll position between the two
@@ -556,7 +535,9 @@ const state = {
   nearStop: FALLBACK,
   lambda: 4.5,      // damp rate; briefly lowered for page flights
   clock: 0,
+  intro: null,      // the first-load move while it runs
 };
+const INTRO_MS = 3400;
 
 // Resolves once the world is showable: model in, or model skipped, or the
 // model failed and the procedural terrain is standing in for it. The
@@ -722,7 +703,6 @@ function build(canvas) {
     state.dust.push(points);
   }
 
-  state.clipPass = buildClipPass();
   Object.assign(state, {
     renderer, scene, camera, sky: skyMat, kilnSprite, kilnLight, seamLight, sun,
     // the sprite's resting size, scaled to the sculpt once one is loaded
@@ -780,8 +760,15 @@ function sampleTarget(scrollY, snap = false) {
   state.tGrade.deep = sa.deep + (sb.deep - sa.deep) * t;
   state.tGrade.kiln = sa.kiln + (sb.kiln - sa.kiln) * t;
 
-  const mix = (k) => (sa[k] || 0) + ((sb[k] || 0) - (sa[k] || 0)) * t;
-  state.tGrade.clipT = mix('clipT');
+  // The clip's playhead runs LINEARLY with the scroll, not on the smoothstep
+  // the camera uses. Eased, it slowed to a stop at every mark and set off
+  // again, so a clip that should run straight through a mark stuttered on it.
+  // A hold is now only where two stops name the same clipT.
+  // A stop with no clip of its own holds the neighbour's playhead, so a clip
+  // fading in or out beside a plain stop stands still rather than rewinding.
+  const ca = sa.clipT ?? sb.clipT ?? 0;
+  const cb = sb.clipT ?? sa.clipT ?? 0;
+  state.tGrade.clipT = ca + (cb - ca) * raw;
   // Which source is showing is not damped: it is a pure function of scroll, so
   // the blend never lags behind the reader. Lenis already smooths the input.
   state.blendFrom = sa.layer || 'world';
@@ -798,134 +785,70 @@ function sampleTarget(scrollY, snap = false) {
   }
 }
 
-/* ------------------------------------------------------- the backdrop clips
-   The clips are line art and light on pure black, and they animate themselves
-   on and off inside their own four seconds. That changes what a transition
-   even is here: there is nothing to dissolve between, because black adds
-   nothing. The clip is composited ADDITIVELY over the finished world, so the
-   wireframe and the beam appear to hang inside the quarry rather than covering
-   it, and the clip's own entrance and exit are the transition.
+/* ------------------------------------------------------- the backdrop clip
+   The clip is a real <video> on screen, not a texture in the WebGL pass. It
+   sits in .backdrop, a fixed layer between the world canvas and the page,
+   which is mix-blend-mode: screen, so the clip's black ground drops out and
+   only the line art lands on the sky. This is what keeps it alive in Safari:
+   a video drawn into WebGL from a hidden one-pixel element is one Safari
+   stops decoding after a few minutes on the page, and the ship then never
+   came back; a visible video is one the browser itself keeps, and restores
+   when it comes back into view.
 
-   This is why the previous machinery is gone. No render target, no second
-   source, no noise, no displacement: the earlier dissolve existed to hide a
-   seam between two dense photographic images, and there is no longer a seam to
-   hide. That shader is parked in effects/cloud-transition.js for the case it
-   was actually good at.                                                      */
+   Scroll is the transport: the clip never plays, its currentTime follows the
+   scroll, one seek in flight at a time. Every frame is a keyframe (see
+   README), so a seek costs one frame of decode.                            */
 
-function buildClipPass() {
-  const mat = new THREE.ShaderMaterial({
-    transparent: true,
-    // The clip is placed at a depth in the scene rather than pasted over it, so
-    // the quarry occludes it: the nodules fall BEHIND the terraces instead of
-    // stopping dead against their edge.
-    depthTest: true,
-    depthWrite: false,
-    uniforms: {
-      uDepth: { value: 0.995 },
-      uTex: { value: null },
-      uCenter: { value: new THREE.Vector2(0.5, 0.5) },
-      uHalf: { value: new THREE.Vector2(0.5, 0.5) },
-      uAmount: { value: 0 },
-      uFeather: { value: 0 },
-    },
-    vertexShader: `
-      varying vec2 vUv; uniform float uDepth;
-      void main(){ vUv = uv; gl_Position = vec4(position.xy, uDepth, 1.0); }`,
-    fragmentShader: `
-      varying vec2 vUv;
-      uniform sampler2D uTex;
-      uniform vec2 uCenter, uHalf;
-      uniform float uAmount, uFeather;
-      void main(){
-        // The clip is placed, not stretched to the viewport: it occupies a
-        // defined box so the quarry stays visible around it and the copy has
-        // somewhere to live. Aspect is preserved by the box itself, computed
-        // in JS, so nothing is cropped or squashed here.
-        vec2 uv = (vUv - uCenter) / (uHalf * 2.0) + 0.5;
-        if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) discard;
-        vec3 c = texture2D(uTex, uv).rgb;
-        // Luma key rather than additive. Additive suits glowing line art but
-        // makes a solid object translucent, and one of these clips is lit
-        // rock: you could see the terrain through the stones. Keying on
-        // brightness gives both, because a bright surface keys to opaque and a
-        // dim glow keys to a soft blend, which is what additive did anyway.
-        // max() not perceptual luma, or saturated gold lines key too weak.
-        float a = smoothstep(0.015, 0.20, max(max(c.r, c.g), c.b));
-        // Soft foot. Where the terrain cannot be arranged to cover the box's
-        // bottom edge (a portrait phone has no spare height for that), the
-        // clip thins out over its lowest stretch instead of ending on a line.
-        a *= smoothstep(0.0, max(uFeather, 0.0001), uv.y);
-        gl_FragColor = vec4(c, a * uAmount);
-      }`,
-  });
-  const scene = new THREE.Scene();
-  scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat));
-  return { scene, cam: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), mat };
-}
+const SEEK_EPS = 1 / 120;
+const CLIPS = { vessel: 0 };
 
-function clipTexture(el) {
-  if (!el.__tex) {
-    el.__tex = new THREE.VideoTexture(el);
-    el.__tex.colorSpace = THREE.SRGBColorSpace;
-  }
-  el.__tex.needsUpdate = true; // the clips are paused, so nothing else uploads
-  return el.__tex;
-}
-
-// Scroll IS the transport: the clips never play on their own, so stopping the
-// scroll holds the frame. Every frame is a keyframe (see README), so a seek
-// costs one frame of decode rather than a whole group of pictures.
-function scrubTo(el, t) {
-  if (!el || el.readyState < 2) return false;
-  if (!el.paused) el.pause();
-  const dur = el.duration || 4;
-  // Never exactly 0: a clip that has not been seeked yet uploads a black
-  // frame however ready it says it is, so the first stop of a clip drew
-  // nothing until the reader had scrolled a little past it.
-  const want = Math.min(dur - 0.05, Math.max(0.04, Math.max(0, t) * (dur - 0.05)));
-  if (Math.abs(el.currentTime - want) > 0.02) el.currentTime = want;
-  return !!el.videoWidth;
-}
-
-const CLIPS = { clinker: 0, vessel: 1 };
-// How far past the look target each clip sits. The nodules want to be among the
-// terraces so the quarry cuts across them; the vessel is meant to read as clear
-// of the ground entirely.
-const CLIP_DEPTH = { clinker: 0.92, vessel: 1.4 };
-
-/* Where each clip sits in the frame, as a fraction of viewport width plus a
-   centre in 0..1 UV (y measured from the bottom, as UV runs). These are
-   compositions, not defaults: the clinker beam falls through the upper right
-   with the quarry left below it, and the vessel runs across the middle band
-   with the chapter's copy held out to either side of it. `sm` is the phone
-   framing, where a portrait viewport needs the clip larger and higher. */
+/* Where the clip sits: on a STAGE, an element in the page whose rect it
+   fills, so the layout decides where the ship goes at every viewport.
+   index.astro sizes the stage to the clip's own proportions. The clip is held
+   where the stage sits once its chapter is PINNED, from the first frame to
+   the last, so the ship never moves, and is shown only while its dark
+   chapter covers that spot.                                                */
 const PLACE = {
-  // Set high enough that the box's top edge is above the viewport: the shaft
-  // runs the clip's full height, so a visible top edge is a hard cut across
-  // the light. Its foot lands behind the near terraces (see clinkerHold).
-  clinker: { w: 0.50, x: 0.76, y: 0.80, dim: 1, feather: 0.1, sm: { w: 1.4, x: 0.54, y: 0.86, dim: 0.6, feather: 0.35 } },
-  // narrowed so it overlaps the right hand column at its edge only: the ask was
-  // slight overlap, and at full width the copy underneath stopped being readable
-  vessel:  { w: 0.52, x: 0.46, y: 0.50, dim: 1, sm: { w: 0.96, x: 0.50, y: 0.30, dim: 0.55 } },
+  vessel: { stage: '[data-clip-stage="vessel"]' },
 };
 
-// Fit the clip inside its box with its own aspect preserved. The box is
-// allowed to run past the top and bottom edges on purpose (that is how a clip
-// hides its own edge); it is only kept inside the viewport sideways.
-function placeClip(name, el, center, half) {
-  const p = PLACE[name];
-  const box = (small && p.sm) ? { ...p, ...p.sm } : p;
-  const va = el.videoWidth / el.videoHeight;
-  const sa = window.innerWidth / window.innerHeight;
-  let hw = box.w / 2;
-  let hh = (box.w * sa / va) / 2;
-  const over = Math.max(1, hh * 2 / 1.1);  // never much taller than the viewport
-  hw /= over; hh /= over;
-  center.set(Math.min(1 - hw, Math.max(hw, box.x)), box.y);
-  half.set(hw, hh);
-  // A phone has no side lane for the copy to sit in, so the clip steps back
-  // and reads as background rather than competing with the text over it.
-  return box;
+let stageEl = null;
+function stageRect(sel) {
+  if (!stageEl || !stageEl.isConnected) stageEl = document.querySelector(sel);
+  return stageEl && stageEl.getBoundingClientRect();
+}
+
+// Size and place the video on the stage's pinned rect. Returns how strongly
+// to show it (0 to 1): 0 when the stage is not on this page or its chapter
+// does not yet cover where the clip sits.
+function placeClip(name, el) {
+  const box = PLACE[name];
+  const r = stageRect(box.stage);
+  if (!r || !r.width) return 0;
+  const vh = window.innerHeight;
+  // The sticky stage's offset from the top of the screen is how far it is
+  // from being pinned; subtracting it gives the rect it has when pinned.
+  const host = stageEl.closest('.interlude__stage');
+  const top = r.top - (host ? host.getBoundingClientRect().top : 0);
+  // a stage whose styles failed to load measures 0px tall: size from width
+  const va = (el.videoWidth / el.videoHeight) || 640 / 368;
+  const h = r.height > 1 ? r.height : r.width / va;
+  const css = `${Math.round(r.left)}px,${Math.round(top)}px,${Math.round(r.width)}px,${Math.round(h)}px`;
+  if (el.__css !== css) {
+    el.__css = css;
+    el.style.left = `${Math.round(r.left)}px`;
+    el.style.top = `${Math.round(top)}px`;
+    el.style.width = `${Math.round(r.width)}px`;
+    el.style.height = `${Math.round(h)}px`;
+  }
+  // fade up as the chapter's top edge rises past the clip's top, and out as
+  // its foot comes up to the clip's bottom: never drawn over another section
+  const sec = host?.parentElement?.getBoundingClientRect();
+  if (!sec) return 1;
+  const band = 0.12 * vh;
+  const enter = Math.min(1, Math.max(0, (top - sec.top) / band));
+  const leave = Math.min(1, Math.max(0, (sec.bottom - (top + h)) / band));
+  return enter * leave;
 }
 
 // Which clip is showing at this scroll position, and how strongly. Only ever
@@ -939,35 +862,38 @@ function activeClip() {
   return ['world', 0];
 }
 
-function drawClip() {
-  const [name, amt] = activeClip();
-  const clips = state.clips;
-  if (name === 'world' || amt <= 0.004) {
-    for (const v of clips) if (v && !v.paused) v.pause();
-    return;
-  }
-  const el = clips[CLIPS[name]];
-  for (const v of clips) if (v && v !== el && !v.paused) v.pause();
-  if (!scrubTo(el, state.grade.clipT)) return;
-
-  const { mat, scene, cam } = state.clipPass;
-  mat.uniforms.uTex.value = clipTexture(el);
-  const box = placeClip(name, el, mat.uniforms.uCenter.value, mat.uniforms.uHalf.value);
-  mat.uniforms.uFeather.value = box.feather || 0;
-  // Depth expressed as a distance just past what the camera is looking at, then
-  // converted to NDC, rather than a magic constant: the projection changes and
-  // a hardcoded value would silently stop occluding.
-  const c = state.camera;
-  const d = Math.max(c.near + 1, c.position.distanceTo(state.look) * CLIP_DEPTH[name]);
-  mat.uniforms.uDepth.value = (c.far + c.near - (2 * c.far * c.near) / d) / (c.far - c.near);
-  mat.uniforms.uAmount.value = amt * (box.dim ?? 1);
-
-  const r = state.renderer;
-  r.autoClear = false;
-  r.render(scene, cam);
-  r.autoClear = true;
+function hideClip(el) {
+  if (el.__on) { el.__on = false; el.style.opacity = '0'; el.style.visibility = 'hidden'; }
 }
 
+// Runs every frame, before the world's idle throttle: the camera holds still
+// through the clip's chapter, and a throttled frame would scrub at half rate.
+function updateClip() {
+  const clips = state.clips;
+  if (!clips) return;
+  const [name, amt] = activeClip();
+  const el = clips[CLIPS[name]];
+  for (const v of clips) if (v && v !== el) hideClip(v);
+  if (!el) return;
+  const shown = amt * placeClip(name, el);
+  if (shown <= 0.004) { hideClip(el); return; }
+
+  // If the browser has let the clip go entirely (no data at all, after long
+  // enough idle), rebuild it. Throttled, since a reload restarts its fetch.
+  if (el.readyState === 0 && performance.now() - (el.__reloaded || 0) > 3000) {
+    el.__reloaded = performance.now();
+    el.load();
+  }
+  if (el.readyState >= 1) {
+    if (!el.paused) el.pause();
+    const dur = el.duration || 4;
+    const want = Math.min(dur - 0.05, Math.max(0.04, Math.max(0, state.grade.clipT) * (dur - 0.05)));
+    el.__want = want;
+    if (!el.seeking && Math.abs(el.currentTime - want) > SEEK_EPS) el.currentTime = want;
+  }
+  if (!el.__on) { el.__on = true; el.style.visibility = 'visible'; }
+  el.style.opacity = shown.toFixed(3);
+}
 
 /* ------------------------------------------------------------ frame */
 // Own rAF loop, real seconds. (GSAP's ticker reports SECONDS, not ms. The
@@ -981,16 +907,33 @@ function frame(now) {
   lastNow = now;
 
   sampleTarget(window.scrollY);
+  updateClip();
 
   state.clock += dt;
   const t = state.clock;
 
   // frame-rate independent critical damp, identical feel at 30 or 144fps
   const k = 1 - Math.exp(-state.lambda * dt);
-  state.pos.lerp(state.tPos, k);
-  state.look.lerp(state.tLook, k);
-  state.grade.fog += (state.tGrade.fog - state.grade.fog) * k;
-  state.grade.deep += (state.tGrade.deep - state.grade.deep) * k;
+  const intro = state.intro;
+  if (intro) {
+    // A scripted move with a soft start and a soft landing. The damp it
+    // replaces did 70% of its travel in the first half second, which read as a
+    // jolt followed by a long drift. Aimed at the LIVE target, so a scroll that
+    // starts mid-intro still lands where the reader is.
+    const p = Math.min(1, (now - intro.t0) / INTRO_MS);
+    const e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(2 - 2 * p, 3) / 2;
+    const clear = 1 - Math.pow(1 - p, 2); // the haze lifts ahead of the move
+    state.pos.lerpVectors(intro.pos, state.tPos, e);
+    state.look.lerpVectors(intro.look, state.tLook, e);
+    state.grade.fog = intro.fog + (state.tGrade.fog - intro.fog) * clear;
+    state.grade.deep = intro.deep + (state.tGrade.deep - intro.deep) * clear;
+    if (p >= 1) state.intro = null;
+  } else {
+    state.pos.lerp(state.tPos, k);
+    state.look.lerp(state.tLook, k);
+    state.grade.fog += (state.tGrade.fog - state.grade.fog) * k;
+    state.grade.deep += (state.tGrade.deep - state.grade.deep) * k;
+  }
   state.grade.kiln += (state.tGrade.kiln - state.grade.kiln) * k;
   // flights ease back to the standing rate
   if (state.lambda < 4.5) state.lambda = Math.min(4.5, state.lambda + dt * 1.6);
@@ -999,16 +942,20 @@ function frame(now) {
   state.pointerSmooth.y += (state.pointer.y - state.pointerSmooth.y) * Math.min(1, dt * 3.2);
 
   const drift = state.reduced ? 0 : 1;
+  // While a clip is up the camera holds still: the clip is fixed to the
+  // screen, so a world swinging with the pointer behind it made the artwork
+  // look pasted on rather than placed.
+  const still = 1 - 0.9 * activeClip()[1];
 
   // orbit the eased pose around its own look target
   if (!state.manual) {
     _off.subVectors(state.pos, state.look);
-    const yaw = (-state.pointerSmooth.x * 0.16 + Math.sin(t * 0.07) * 0.02) * drift;
+    const yaw = (-state.pointerSmooth.x * 0.16 + Math.sin(t * 0.07) * 0.02) * drift * still;
     const cy = Math.cos(yaw), sy = Math.sin(yaw);
     const ox = _off.x * cy - _off.z * sy;
     const oz = _off.x * sy + _off.z * cy;
     _off.x = ox; _off.z = oz;
-    _off.y += (-state.pointerSmooth.y * _off.length() * 0.06 + Math.sin(t * 0.22) * 0.35) * drift;
+    _off.y += (-state.pointerSmooth.y * _off.length() * 0.06 + Math.sin(t * 0.22) * 0.35) * drift * still;
     _a.addVectors(state.look, _off);
 
     state.camera.position.copy(_a);
@@ -1016,7 +963,11 @@ function frame(now) {
   }
 
   const g = state.grade;
-  g.clipT += (state.tGrade.clipT - g.clipT) * k;
+  // The playhead is NOT damped. It is a pure function of the scroll, which
+  // Lenis already smooths, so it stays locked to the copy scrolling beside
+  // it; damped, it trailed the page by a quarter of a second, and gliding
+  // between the two clips ran the ship backwards through its whole build.
+  g.clipT = state.tGrade.clipT;
   state.scene.fog.density = g.fog;
   state.scene.fog.color.copy(C.fogSurface).lerp(C.fogDeep, g.deep);
   state.sky.uniforms.uDeep.value = g.deep;
@@ -1039,6 +990,7 @@ function frame(now) {
   // is the slow ambient drift, indistinguishable at half rate, and it halves
   // the GPU cost of a page nobody is scrolling.
   const settled =
+    !state.intro &&
     state.lambda >= 4.5 &&
     state.pos.distanceToSquared(state.tPos) < 4e-4 &&
     state.look.distanceToSquared(state.tLook) < 4e-4;
@@ -1052,7 +1004,6 @@ function frame(now) {
   if (!settled) adapt(dt);
 
   state.renderer.render(state.scene, state.camera);
-  if (state.clips) drawClip();
 }
 
 let lastDraw = 0;
@@ -1089,23 +1040,16 @@ export const World = {
       state.pointer.y = (e.clientY / window.innerHeight) * 2 - 1;
     }, { passive: true });
 
-    // Compile the clip shader now rather than on the frame the reader first
-    // reaches a handoff: lazily compiled it cost a single 235ms frame exactly
-    // once, landing in the middle of the transition it exists to smooth.
-    state.renderer.compile(state.clipPass.scene, state.clipPass.cam);
-
     lastNow = performance.now();
     requestAnimationFrame(frame);
 
     // Sculpted model, if one is configured and the device should carry it.
     // The preloader is waiting on this: whichever way it ends, mark ready.
-    if (shouldLoadModel()) {
-      World.loadModel(MODEL_URL)
-        .catch((e) => console.warn('[aevum:world] model failed, keeping procedural terrain', e))
-        .finally(markReady);
-    } else {
-      markReady();
-    }
+    const model = shouldLoadModel()
+      ? World.loadModel(MODEL_URL).catch((e) => console.warn('[aevum:world] model failed, keeping procedural terrain', e))
+      : Promise.resolve();
+
+    model.finally(markReady);
   },
 
   // motion.js hands over [{ y: scrollOffset, stop: 'rim' }, ...] per page
@@ -1115,9 +1059,14 @@ export const World = {
   // DOM layer so it lands on the same frame as the fog colour it hides behind.
   setClips(list) {
     state.clips = list;
-    // make the textures now: created lazily, the first one lands on the frame
-    // the first handoff begins
-    for (const el of list) if (el) clipTexture(el);
+    for (const el of list) {
+      if (!el || el.__bound) continue;
+      el.__bound = true;
+      // one seek in flight at a time; when it lands, chase the scroll
+      el.addEventListener('seeked', () => {
+        if (el.__want != null && Math.abs(el.currentTime - el.__want) > SEEK_EPS) el.currentTime = el.__want;
+      });
+    }
   },
 
   // the clips ride the same device rule as the model
@@ -1155,17 +1104,27 @@ export const World = {
   // lifts.
   intro() {
     if (state.reduced) return;
-    _off.subVectors(state.pos, state.look);
-    // in to 55% of the standing distance, swung a little round the hill
-    const yaw = -0.22, cy = Math.cos(yaw), sy = Math.sin(yaw);
-    const ox = _off.x * cy - _off.z * sy, oz = _off.x * sy + _off.z * cy;
-    _off.set(ox, _off.y, oz).multiplyScalar(0.55);
-    state.pos.addVectors(state.look, _off);
-    state.pos.y += 11;
-    state.look.y -= 6;
-    state.grade.fog = state.tGrade.fog * 2.4;
-    state.grade.deep = Math.min(1, state.tGrade.deep + 0.25);
-    state.lambda = 0.8;
+    // Starts a little back and well below the vantage, deep in haze, then
+    // rises and pushes in to it as the haze lifts: the zoom in and fade in,
+    // without the pulled-back frame that showed the sculpt's outer edge. Low is
+    // what makes it safe: the near terraces cover everything past the model's
+    // rim, measured clean from here all the way in. Anything further back than
+    // about 1.15x shows the cut on the right of the frame.
+    _off.subVectors(state.tPos, state.tLook).multiplyScalar(1.1);
+    const pos = new THREE.Vector3().addVectors(state.tLook, _off);
+    pos.y -= 8;
+    const look = state.tLook.clone();
+    look.y -= 5;
+    state.intro = {
+      t0: performance.now(),
+      pos, look,
+      fog: state.tGrade.fog * 3.2,
+      deep: Math.min(1, state.tGrade.deep + 0.3),
+    };
+    state.pos.copy(pos);
+    state.look.copy(look);
+    state.grade.fog = state.intro.fog;
+    state.grade.deep = state.intro.deep;
   },
 
   // Nest a sculpted quarry GLB in the landscape, auto-fitted so the existing
@@ -1313,7 +1272,6 @@ export const World = {
   get stops() { return STOPS; },
   // the clip placements and depths, for the same by-eye tuning as the stops
   get place() { return PLACE; },
-  get clipDepth() { return CLIP_DEPTH; },
 
   get ready() { return state.ready; },
   // resolves when the world is ready to be shown; the preloader awaits it

@@ -3,20 +3,22 @@
 //   parallax: vertical drift factor, e.g. "0.12". Omit for static.
 //   ratio:    CSS aspect-ratio, e.g. "16 / 9".
 //   pos:      object-position, to differentiate crops of a reused photo.
-//   vtName:   view-transition-name, kept for named element morphs.
-const { src, alt = '', parallax, ratio, pos, vtName, class: cls = '', loading = 'lazy', ...rest } = Astro.props;
-const style = [
-  ratio && `aspect-ratio: ${ratio};`,
-  vtName && `view-transition-name: ${vtName};`,
-].filter(Boolean).join(' ') || undefined;
+const { src, alt = '', parallax, ratio, pos, class: cls = '', loading = 'lazy', ...rest } = Astro.props;
+// No view-transition-name: a named photo ran the browser's own morph on top
+// of the page's exit and entrance, so it was seen leaving twice.
+const style = ratio ? `aspect-ratio: ${ratio};` : undefined;
 ---
 
+<!-- The inner layer carries the reveal's cut; the figure stays unclipped
+     because it is what the reveal observer watches. -->
 <figure class={`media ${cls}`} data-parallax={parallax} style={style} {...rest}>
-  <img
-    src={src}
-    alt={alt}
-    loading={loading}
-    decoding="async"
-    style={pos ? `object-position: ${pos};` : undefined}
-  />
+  <div class="media__inner">
+    <img
+      src={src}
+      alt={alt}
+      loading={loading}
+      decoding="async"
+      style={pos ? `object-position: ${pos};` : undefined}
+    />
+  </div>
 </figure>

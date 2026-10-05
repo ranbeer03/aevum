@@ -22,5 +22,9 @@ export default defineConfig({
     },
   },
   trailingSlash: 'never',
-  build: { format: 'file' },
+  // Styles inline in each page, so a client-side swap applies them in the
+  // same step as the new markup. As linked files, Safari applied a swapped-in
+  // page's stylesheet a frame late and showed it unstyled first (the home
+  // hero sat at the top of the screen, then jumped 252px into place).
+  build: { format: 'file', inlineStylesheets: 'always' },
 });

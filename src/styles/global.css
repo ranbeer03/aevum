@@ -31,7 +31,7 @@
 
   /* semantic, with the ratio each pair measures on this ground (#0d221a) */
   --text: var(--ivory);                        /* 14.5:1 */
-  --text-dim: rgba(243, 239, 228, 0.72);       /*  8.1:1 */
+  --text-dim: rgba(243, 239, 228, 0.86);       /* 11.0:1  was .72; read as thin over the world */
   --text-faint: rgba(222, 210, 180, 0.78);     /*  7.2:1  was .6 = 4.8; HIG dark mode asks 7:1 for small custom text */
   --line: var(--forest-line);
   --accent: var(--gold);                       /*  7.4:1  interactive only */
@@ -47,13 +47,13 @@
   --size-h1: clamp(1.7rem, 1rem + 3vw, 3.3rem);
   --size-h2: clamp(1.35rem, 0.95rem + 1.8vw, 2.3rem);
   --size-h3: clamp(1.05rem, 0.95rem + 0.6vw, 1.35rem);
-  --size-body-lg: clamp(1.06rem, 1rem + 0.35vw, 1.25rem);
-  --size-body: 1.0625rem;
-  --size-small: 0.9375rem;
+  --size-body-lg: clamp(1.125rem, 1.04rem + 0.4vw, 1.3rem);
+  --size-body: 1.125rem;
+  --size-small: 1rem;
   --size-micro: 0.8125rem;
 
   /* -- rhythm (tightened premium) --------------------------- */
-  --space-section: clamp(4rem, 2.5rem + 5vw, 7rem);
+  --space-section: clamp(5rem, 3rem + 6.5vw, 10rem);
   --space-block: clamp(1.8rem, 1.3rem + 2.2vw, 3.2rem);
   --gutter: clamp(1.25rem, 4vw, 3.5rem);
   --container: 84rem;
@@ -61,6 +61,8 @@
 
   /* -- motion ----------------------------------------------- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* for hovers and quiet state changes: no rush at the start */
+  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 /* Ivory passages float as translucent plates over the world. The plate is a
@@ -72,7 +74,7 @@
    measured a 40% framerate loss. Alpha alone gives the depth at no cost. */
 .is-light {
   --text: #14261d;                             /* 11.6:1 */
-  --text-dim: rgba(20, 38, 29, 0.74);          /*  6.0:1 */
+  --text-dim: rgba(20, 38, 29, 0.84);          /*  8.0:1  was .74 */
   --text-faint: rgba(20, 38, 29, 0.7);         /*  5.1:1  was .5 = 2.85, a failure */
   --line: rgba(20, 38, 29, 0.16);
   --accent: #604c2c;                           /*  6.1:1  was gold-deep = 3.97 at 13px, a failure */
@@ -93,6 +95,9 @@
   inherits: false;
   initial-value: 1;
 }
+/* inherits: the shade is drawn by ::before, and the survey line by a child */
+@property --shade { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --draw { syntax: '<number>'; inherits: true; initial-value: 1; }
 
 /* ============================================================
    reset
@@ -126,19 +131,26 @@ img, video, svg { display: block; max-width: 100%; }
   pointer-events: none;
 }
 .world canvas { width: 100%; height: 100%; display: block; }
-/* The clips are texture sources now, not a layer. They stay in the document
-   because detached media does not play reliably on Safari, but they are one
-   pixel and invisible: world.js draws them inside the WebGL pass. */
+/* The backdrop clip: a real on-screen video, between the world canvas and
+   the page (same z-index as .world, later in the document, so above it; main
+   is above both). The layer is screen-blended onto the canvas, so the clip's
+   black ground drops out and its line art lands on the sky. The blend is on
+   the layer, not the video: a fixed element is its own stacking context, and
+   a blend inside it would only reach the empty layer. world.js places, fades
+   and scrubs the video. */
 .backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  opacity: 0;
+  inset: 0;
+  z-index: 0;
   pointer-events: none;
-  z-index: -1;
+  mix-blend-mode: screen;
+}
+.backdrop__clip {
+  position: absolute;
+  object-fit: contain;
+  opacity: 0;
+  visibility: hidden;
+  background: #000;
 }
 
 main { position: relative; z-index: 1; }
@@ -168,15 +180,14 @@ a { color: inherit; text-decoration: none; }
   justify-items: center;
   gap: 1.4rem;
   background: var(--forest-900);
-  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+  /* Its own layer from the first paint. Promoted only when its exit began,
+     the full-screen loader had no tiles ready: it vanished for a frame, then
+     came back as a box rasterising outward from the centre while it faded.
+     Motion owns the exit; a CSS transition here as well made two engines
+     animate one element. */
+  will-change: opacity, transform;
 }
 html.is-loading, html.is-loading body { overflow: hidden; }
-
-.loader.is-done {
-  opacity: 0;
-  transform: scale(1.03);
-  pointer-events: none;
-}
 
 .loader__mark { width: 72px; height: 72px; overflow: visible; }
 .loader__cut { fill: none; stroke: var(--gold); stroke-width: 1; opacity: 0.55; }
@@ -234,12 +245,16 @@ html.is-loading, html.is-loading body { overflow: hidden; }
    has to be readable without the motion layer that normally reveals it. */
 html.no-motion [data-reveal],
 html.no-motion [data-reveal="row"] > *,
-html.no-motion .split-line > .split-inner {
+html.no-motion [data-reveal="strata"] > .media__inner,
+html.no-motion .split-line > .split-inner,
+html.no-motion [data-reveal="survey"] * {
   opacity: 1;
   transform: none;
   clip-path: none;
   filter: none;
   --plate: 1;
+  --shade: 1;
+  --draw: 1;
 }
 
 /* ============================================================
@@ -290,6 +305,8 @@ h3 {
 }
 
 p + p { margin-top: 1em; }
+/* no one-word last lines */
+p { text-wrap: pretty; }
 
 /* ============================================================
    layout
@@ -399,22 +416,57 @@ p + p { margin-top: 1em; }
 }
 .link-line:hover::after, .link-line:focus-visible::after { transform: scaleX(1); }
 
-/* Raking light that follows the pointer: motion.js writes --mx/--my on the
-   element under it. It used to be a one-way sweep that ran on hover and
-   snapped back on leave, so crossing from one frame to the next, or leaving
-   mid-sweep, cut the light off dead. A light at the pointer has no start and
-   no end to snap between; it only brightens and dims. */
-.rake-row { position: relative; overflow: hidden; }
-.rake-row::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(24rem 12rem at var(--mx, 50%) var(--my, 50%), rgba(216, 188, 128, 0.13), transparent 70%);
-  opacity: 0;
-  transition: opacity 0.6s var(--ease-out);
-  pointer-events: none;
+/* Hover, in two kinds. IMAGES take the inspection light: a soft lamp under
+   the pointer, inside the frame and clipped by it, so it never spills past
+   the photograph. motion.js aims one lamp per group ([data-rake], or a lone
+   image) and writes the same screen point into every image in it as
+   --mx/--my, so a collage is lit as one surface. Registered as lengths so the
+   lamp glides behind the pointer; `.rake-jump` drops the glide for the frame
+   the pointer enters, so it appears where the pointer is. TEXT ROWS take a
+   typographic hover instead (`.ledger-row`, below). */
+/* hover is paused while the page scrolls (motion.js sets .is-scrolling) */
+@media (hover: hover) {
+  html.is-scrolling body { pointer-events: none; }
 }
-.rake-row:hover::after { opacity: 1; }
+@property --mx { syntax: '<length>'; inherits: true; initial-value: 0px; }
+@property --my { syntax: '<length>'; inherits: true; initial-value: 0px; }
+
+/* Ledger rows (services, how we work): a slow wash of ink comes up behind the
+   row, its name and copy deepen to full ink, and a short accent rule draws
+   under the name. Nothing moves: the earlier version stepped the name sideways
+   on an exponential curve and read as snappy. The 80ms delay on the way in is
+   hover intent, so sweeping the pointer down the list does not fire every row
+   it crosses; the way out has none, and is slower than the way in. */
+@media (hover: hover) {
+  .ledger-row { position: relative; }
+  .ledger-row::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--text) 6%, transparent), transparent 75%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.1s var(--ease-soft);
+  }
+  .ledger-row > * { transition: color 1s var(--ease-soft); }
+  .ledger-row > :first-child { position: relative; }
+  .ledger-row > :first-child::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.55rem;
+    width: 2.5rem;
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.8s var(--ease-soft);
+  }
+  .ledger-row:hover::after { opacity: 1; transition-duration: 0.8s; transition-delay: 80ms; }
+  .ledger-row:hover > * { color: var(--text); transition-duration: 0.7s; transition-delay: 80ms; }
+  .ledger-row:hover > :first-child::after { transform: scaleX(1); transition-duration: 1s; transition-delay: 80ms; }
+}
 
 /* ============================================================
    media frames
@@ -422,35 +474,54 @@ p + p { margin-top: 1em; }
 .media {
   position: relative;
   overflow: clip;
-  background: var(--forest-850);
+  /* recedes as it leaves through the top: motion.js scrubs --recede 0 to 1.
+     Individual properties, so the entrance's transform is left alone. */
+  scale: calc(1 - var(--recede, 0) * 0.05);
+  filter: brightness(calc(1 - var(--recede, 0) * 0.4));
 }
-.media > img {
+/* the frame's surface: carries the loading ground and the reveal's cut */
+.media__inner {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  background: var(--forest-850);
+  transition: scale 1.2s var(--ease-out);
+}
+.media__inner > img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.media[data-parallax] > img {
+.media[data-parallax] .media__inner > img {
   height: 118%;
   position: absolute;
   inset: 0;
   will-change: transform;
 }
 
-/* the same light on image panels, warmer and wider */
-.rake-media { position: relative; }
-.rake-media::before {
+/* the lamp, inside every image frame */
+.media { transition: --mx 0.45s var(--ease-out), --my 0.45s var(--ease-out); }
+.media::after {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 2;
-  background: radial-gradient(30rem 24rem at var(--mx, 50%) var(--my, 50%), rgba(216, 188, 128, 0.22), transparent 68%);
+  background: radial-gradient(30rem 24rem at var(--mx) var(--my), rgba(216, 188, 128, 0.18), transparent 68%);
   opacity: 0;
-  transition: opacity 0.7s var(--ease-out);
+  transition: opacity 0.8s var(--ease-out);
   pointer-events: none;
 }
-.rake-media:hover::before { opacity: 1; }
+.rake-jump { transition: none !important; }
+.is-lit .media::after, .media.is-lit::after { opacity: 1; }
+/* and the photograph leans in toward the reader, slowly enough to read as
+   weight rather than a jump. On the inner layer (the frame clips it, so the
+   frame holds still): the image itself is GSAP's, which writes an inline
+   `scale: none` over it. */
+@media (hover: hover) {
+  .media:hover .media__inner { scale: 1.04; }
+}
 @media (hover: none) {
-  .rake-row::after, .rake-media::before { display: none; }
+  .media::after { display: none; }
 }
 
 /* ============================================================
@@ -465,15 +536,14 @@ p + p { margin-top: 1em; }
    what lets a page arrival stagger its content as one movement. */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(1.6rem);
-  filter: blur(6px); /* copy arrives as a focus pull, not only a fade */
+  transform: translateY(1rem);
 }
 [data-reveal].in { opacity: 1; transform: none; filter: none; }
 
-/* Headings are split into lines at reveal time and rise out of a clipped box,
-   the hero's own cut. The heading itself only needs to be hidden until then. */
-h1[data-reveal], h2[data-reveal], h3[data-reveal] { transform: none; filter: none; }
-.line-mask { overflow: clip; }
+/* Headings are split into lines at reveal time and rise out of a clipped
+   box, the hero's own cut. The heading itself only needs to be hidden until
+   then. */
+h1[data-reveal], h2[data-reveal], h3[data-reveal] { transform: none; }
 
 /* A section's ground, revealed as its own layer. It must undo the generic
    hidden state above: hiding the whole section would take its contents with
@@ -486,14 +556,23 @@ h1[data-reveal], h2[data-reveal], h3[data-reveal] { transform: none; filter: non
 }
 [data-reveal="plate"].in { --plate: 1; }
 
-/* strata reveal starts from a VISIBLE band, so imagery is never fully hidden */
+/* shade comes up behind its copy as its own layer, like a plate */
+[data-reveal="shade"] {
+  opacity: 1;
+  transform: none;
+  --shade: 0;
+}
+[data-reveal="shade"].in { --shade: 1; }
+
+/* An image is cut open from its foot upward. The cut is on the frame's inner
+   layer: the frame is the observer's target and must stay unclipped. */
 [data-reveal="strata"] {
   opacity: 1;
   transform: none;
   filter: none;
-  clip-path: inset(24% 0 24% 0);
 }
-[data-reveal="strata"].in { clip-path: inset(0 0 0 0); }
+[data-reveal="strata"] > .media__inner { clip-path: inset(100% 0 0 0); }
+[data-reveal="strata"].in > .media__inner { clip-path: none; }
 
 /* A chain row is laid left to right, the way the route line beside it draws.
    The clip is on the row's CHILDREN, never on the row: the row is the
@@ -509,6 +588,11 @@ h1[data-reveal], h2[data-reveal], h3[data-reveal] { transform: none; filter: non
 [data-reveal="row"] > * { clip-path: inset(0 100% 0 0); }
 [data-reveal="row"].in > * { clip-path: none; }
 
+/* The mask itself is never hidden, only the line inside it moves. It used to
+   inherit the generic hidden state (opacity 0) and only got it back from
+   `.in` when the rise had FINISHED, so every page title rose invisibly for a
+   second and then appeared at once: the "headings just come in" bug. */
+.split-line[data-reveal] { opacity: 1; transform: none; }
 .split-line { overflow: clip; display: block; }
 .split-line > .split-inner {
   display: block;
@@ -602,15 +686,7 @@ h1[data-reveal], h2[data-reveal], h3[data-reveal] { transform: none; filter: non
 /* ============================================================
    view transitions: named morphs, plus the reduced-motion off-switch
    ============================================================ */
-/* No crossfade. motion.js animates the outgoing page out before the swap and
-   staggers the incoming page in after it, and the camera flies between the two
-   pages' stops in between. Astro's own root animation would run on top of that
-   and read as the content appearing twice. */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
+
 
 /* ============================================================
    forms
@@ -665,16 +741,18 @@ h1[data-reveal], h2[data-reveal], h3[data-reveal] { transform: none; filter: non
 @media (prefers-reduced-motion: reduce) {
   [data-reveal],
   [data-reveal="row"] > *,
+  [data-reveal="strata"] > .media__inner,
+  [data-reveal="survey"] *,
   .split-line > .split-inner {
     opacity: 1 !important;
     transform: none !important;
     clip-path: none !important;
     filter: none !important;
     --plate: 1 !important;
+    --shade: 1 !important;
+    --draw: 1 !important;
     transition: none !important;
   }
-  .vein { transform: scaleY(1); }
-  .seam { display: none; }
 }
 
 /* ============================================================
@@ -732,16 +810,30 @@ a.visually-hidden:focus-visible {
   text-transform: uppercase;
 }
 
-/* soft local scrim so ivory copy never fights the world's rim-light */
+/* A card behind copy that sits on the live world: one flat translucent fill,
+   a gold hairline and rounded corners. No gradient: flat reads as modern and
+   minimal, where a fading scrim read as shade. --shade lets it come up ahead
+   of the words on it (data-reveal="shade"). On desktop it bleeds out around
+   its copy without moving the layout. */
 .copy-shield {
   position: relative;
 }
 .copy-shield::before {
   content: "";
   position: absolute;
-  inset: -1.5rem -2rem;
+  inset: -1.75rem -2rem;
   z-index: -1;
-  background: radial-gradient(90% 100% at 40% 50%, rgba(7, 21, 16, 0.55), rgba(7, 21, 16, 0.18) 70%, transparent);
-  border-radius: 2rem;
+  background: rgba(7, 21, 16, 0.62);
+  border: 1px solid rgba(198, 169, 108, 0.14);
+  border-radius: 1.5rem;
+  opacity: var(--shade, 1);
   pointer-events: none;
+}
+/* On a phone it can no longer bleed outward: wider than the screen, it showed
+   only its rounded bottom corners, cut off at both sides. The card sits on
+   the page margins instead and the copy steps in from it, so all four
+   corners are on screen. */
+@media (max-width: 860px) {
+  .copy-shield { padding: 1.6rem 1.15rem; }
+  .copy-shield::before { inset: 0; border-radius: 1.25rem; }
 }
