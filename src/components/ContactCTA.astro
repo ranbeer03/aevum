@@ -4,8 +4,8 @@ import Arrow from './Arrow.astro';
 // riding translucently over the world's banked-ember bedrock.
 import { contact } from '../data/site.js';
 const {
-  heading = 'Ready to move?',
-  copy = 'Tell us the commodity, the tonnage and the destination. We will come back with a firm, executable offer.',
+  heading = 'Tell us the cargo.',
+  copy = 'Commodity, grade, tonnage, delivery point and timing. The trading desk replies with a firm, executable offer.',
 } = Astro.props;
 ---
 
@@ -17,7 +17,7 @@ const {
         <h2 class="cta__heading" data-reveal>{heading}</h2>
         <p class="cta__copy" data-reveal style="--reveal-delay: 0.08s">{copy}</p>
         <a href="/contact" class="btn btn--solid" data-reveal style="--reveal-delay: 0.16s">
-          Start the conversation
+          Start an enquiry
           <Arrow class="btn-arrow" />
         </a>
       </div>

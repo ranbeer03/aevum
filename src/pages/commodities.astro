@@ -3,6 +3,28 @@ import Arrow from '../components/Arrow.astro';
 import Base from '../layouts/Base.astro';
 import Media from '../components/Media.astro';
 import ContactCTA from '../components/ContactCTA.astro';
+import Survey from '../components/Survey.astro';
+
+// How an order runs, enquiry to delivery. Only what Aevum does on every
+// cargo: no figures, no named inspectors until they are confirmed.
+const steps = [
+  {
+    name: 'Specification',
+    copy: 'You send the commodity, grade, tonnage, delivery point and window.',
+  },
+  {
+    name: 'Firm offer',
+    copy: 'We confirm source and chemistry and quote a firm price on the Incoterms you need.',
+  },
+  {
+    name: 'Inspection',
+    copy: 'The cargo is sampled and independently inspected, and a certificate of analysis travels with it.',
+  },
+  {
+    name: 'Delivery',
+    copy: 'Trucked or shipped to your plant, stockyard or berth, with the documents to match.',
+  },
+];
 import { commodities } from '../data/commodities.js';
 ---
 
@@ -18,8 +40,8 @@ import { commodities } from '../data/commodities.js';
         <span class="split-line" data-reveal style="--reveal-delay: 0.07s"><span class="split-inner">One supply chain.</span></span>
       </h1>
       <p class="page-hero__sub lede" data-reveal style="--reveal-delay: 0.14s">
-        Everything we trade is specified in writing and delivered against that
-        specification, with independent inspection at handover.
+        Everything we trade is sold against a written specification and
+        independently inspected at handover.
       </p>
       <nav class="page-hero__jump" aria-label="Commodities on this page" data-reveal style="--reveal-delay: 0.2s">
         {commodities.map((c) => (
@@ -104,14 +126,23 @@ import { commodities } from '../data/commodities.js';
     </article>
   ))}
 
+  <!-- ============================== how an order runs -->
+  <section class="section order" data-depth="Ordering">
+    <div class="container">
+      <h2 data-reveal>From enquiry to delivery</h2>
+      <Survey items={steps} ordered compact />
+    </div>
+  </section>
+
   <ContactCTA
     heading="Need a grade sheet?"
-    copy="Certificates of analysis and full grade documentation come with every cargo we quote."
+    copy="Grade sheets and certificates of analysis are available for every cargo we quote."
   />
 </Base>
 
 <style>
   .page-hero__jump { margin-top: 2.4rem; display: flex; gap: 2.5rem; flex-wrap: wrap; }
+  .order h2 { margin-bottom: var(--space-block); }
 
   .commodity__grid {
     display: grid;

@@ -188,12 +188,12 @@ function reveal(el, delay = 0) {
     return;
   }
 
-  // How we work: a survey line is drawn across the principles (down them on
-  // a phone), and each surfaces as the line reaches it: its marker, then its
+  // A survey line (Survey.astro) is drawn across its items (down them on a
+  // phone), and each surfaces as the line reaches it: its marker, then its
   // name and copy. The line runs at a constant rate, so where it is at any
   // moment is simply how far through its duration it is.
   if (el.dataset.reveal === 'survey') {
-    const items = [...el.querySelectorAll('.pillars__item')];
+    const items = [...el.querySelectorAll('.survey__item')];
     const across = matchMedia('(min-width: 861px)').matches; // the phone layout runs it down
     const LINE = 1.5, start = at + 0.2;
     animate(el, { '--shade': [0, 1] }, { duration: 0.9, delay: at, ease: EASE });
@@ -201,8 +201,8 @@ function reveal(el, delay = 0) {
     const runs = items.map((it) => {
       const f = across ? it.offsetLeft / el.offsetWidth : it.offsetTop / el.offsetHeight;
       const t = start + LINE * f;
-      animate(it.querySelector('.pillars__node'), { transform: ['scale(0)', 'scale(1)'] }, { duration: 0.5, delay: t, ease: EASE });
-      const text = [it.querySelector('.pillars__name'), it.querySelector('.pillars__copy')];
+      animate(it.querySelector('.survey__node'), { transform: ['scale(0)', 'scale(1)'] }, { duration: 0.5, delay: t, ease: EASE });
+      const text = [it.querySelector('.survey__name'), it.querySelector('.survey__copy')];
       return animate(text, { opacity: [0, 1], transform: ['translateY(1.1rem)', 'translateY(0px)'] },
         { duration: 0.9, delay: stagger(0.1, { startDelay: t + 0.08 }), ease: EASE_COPY }).finished;
     });

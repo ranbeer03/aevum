@@ -9,7 +9,7 @@ export const site = {
   domain: 'https://aevumfze.com',
   tagline: 'Cement clinker and limestone, traded and delivered across the UAE.',
   description:
-    'Aevum FZE trades cement clinker and limestone in the United Arab Emirates, sourcing, financing and delivering cargo from the quarry gate to the grinding mill.',
+    'Aevum FZE trades cement clinker and limestone in the United Arab Emirates and manages the supply chain behind every cargo, from the quarry gate to the grinding mill.',
 };
 
 export const contact = {

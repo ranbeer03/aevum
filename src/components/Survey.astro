@@ -1,0 +1,100 @@
+---
+// A survey line drawn across its items (down them on a phone), each item
+// surfacing as the line reaches it: motion.js, data-reveal="survey".
+//   items:   [{ name, copy }]
+//   ordered: a sequence (an <ol>), e.g. the steps of an order
+//   compact: smaller names, so four or more columns fit
+const { items, ordered = false, compact = false } = Astro.props;
+const List = ordered ? 'ol' : 'ul';
+---
+
+<div
+  class:list={['survey copy-shield', { 'survey--compact': compact }]}
+  data-reveal="survey"
+  style={`--n: ${items.length}`}
+>
+  <span class="survey__line" aria-hidden="true"></span>
+  <List class="survey__list">
+    {items.map((it) => (
+      <li class="survey__item">
+        <span class="survey__node" aria-hidden="true"></span>
+        <h3 class="survey__name">{it.name}</h3>
+        <p class="survey__copy">{it.copy}</p>
+      </li>
+    ))}
+  </List>
+</div>
+
+<style>
+  /* a gold line across the top, a marker where each item stands on it, the
+     items as columns below */
+  .survey { position: relative; padding-top: 2.75rem; }
+  .survey__line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold), rgba(198, 169, 108, 0.35));
+    transform-origin: left;
+    transform: scaleX(var(--draw, 1));
+  }
+  .survey__list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    gap: clamp(2rem, 4.5vw, 5rem);
+  }
+  .survey--compact .survey__list { gap: clamp(1.5rem, 3vw, 3rem); }
+  .survey__item { position: relative; }
+  .survey__node {
+    position: absolute;
+    left: 0;
+    top: calc(-2.75rem - 4px);
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 5px rgba(198, 169, 108, 0.14);
+  }
+  .survey__name { font-size: var(--size-h2); margin-bottom: 1.1rem; }
+  .survey--compact .survey__name { font-size: var(--size-h3); margin-bottom: 0.9rem; }
+  .survey__copy {
+    color: var(--text-dim);
+    font-size: var(--size-body-lg);
+    max-width: 34ch;
+    transition: color 1s var(--ease-soft);
+  }
+  .survey--compact .survey__copy { font-size: var(--size-body); }
+  @media (hover: hover) {
+    .survey__item:hover .survey__copy { color: var(--text); transition-duration: 0.7s; transition-delay: 80ms; }
+  }
+
+  /* hidden until drawn (motion.js plays the survey and adds .in) */
+  [data-reveal="survey"] { opacity: 1; transform: none; --draw: 0; --shade: 0; }
+  [data-reveal="survey"] .survey__node { transform: scale(0); }
+  [data-reveal="survey"] .survey__name,
+  [data-reveal="survey"] .survey__copy { opacity: 0; transform: translateY(1.1rem); }
+  [data-reveal="survey"].in { --draw: 1; --shade: 1; }
+  [data-reveal="survey"].in .survey__node { transform: none; }
+  [data-reveal="survey"].in .survey__name,
+  [data-reveal="survey"].in .survey__copy { opacity: 1; transform: none; }
+
+  @media (max-width: 860px) {
+    /* the line runs down the left instead, inside the card's own padding */
+    .survey { padding: 1.6rem 1.15rem 1.6rem 3rem; }
+    .survey__line {
+      right: auto;
+      top: 1.6rem;
+      bottom: 1.6rem;
+      left: 1.25rem;
+      width: 1px;
+      height: auto;
+      background: linear-gradient(180deg, var(--gold), rgba(198, 169, 108, 0.35));
+      transform-origin: top;
+      transform: scaleY(var(--draw, 1));
+    }
+    .survey__list { grid-template-columns: 1fr; gap: 2.6rem; }
+    .survey__node { top: 0.55em; left: calc(-1.75rem - 4px); }
+  }
+</style>

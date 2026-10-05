@@ -3,18 +3,19 @@ import Arrow from '../components/Arrow.astro';
 import Base from '../layouts/Base.astro';
 import Media from '../components/Media.astro';
 import ContactCTA from '../components/ContactCTA.astro';
+import Survey from '../components/Survey.astro';
 
 const pillars = [
   {
     name: 'Focus',
-    copy: 'Two commodities rather than twenty. We know their chemistry, the quarries they come from and what it takes to move them.',
+    copy: 'Two commodities, not twenty. We know their chemistry, the quarries and kilns they come from, and what it takes to move them.',
   },
   {
     name: 'Execution',
-    copy: 'Specification, tonnage, laycan and documentation, delivered on the terms contracted.',
+    copy: 'Specification, tonnage, laycan and documents, delivered as contracted. When something slips, you hear it from us first.',
   },
   {
-    name: 'Relationships',
+    name: 'Continuity',
     copy: 'Bulk trade runs on trust built cargo by cargo. We intend to be trading with the same counterparties in twenty years.',
   },
 ];
@@ -22,7 +23,7 @@ const pillars = [
 
 <Base
   title="Who We Are | Aevum"
-  description="Aevum FZE is a trading company registered in the United Arab Emirates, dealing in cement clinker and limestone with logistics handled in house."
+  description="Aevum FZE is a UAE trading company specialised in cement clinker and limestone, with inland logistics and vessel chartering handled in house."
 >
   <!-- ============================== hero -->
   <section class="page-hero" data-depth="Top" data-cam="basin">
@@ -46,14 +47,14 @@ const pillars = [
         <div class="who__copy">
           <p data-reveal style="--reveal-delay: 0.1s">
             Aevum FZE is a trading company registered in the United Arab
-            Emirates. We buy and sell cement clinker and limestone, and we
-            manage the supply chains that move them.
+            Emirates. We trade two commodities, cement clinker and limestone,
+            and manage the supply chains that move them.
           </p>
           <p data-reveal style="--reveal-delay: 0.18s">
-            We work at the quarries, clinker lines and bulk terminals of the
-            Emirates, for producers and buyers who need cargo on specification
-            and on schedule without coordinating several intermediaries to get
-            it.
+            We work between the quarries, clinker producers, grinding plants
+            and bulk terminals of the Emirates. Buyers come to us for cargo on
+            specification and on schedule, from one counterparty rather than a
+            chain of intermediaries.
           </p>
         </div>
       </div>
@@ -74,20 +75,7 @@ const pillars = [
   <section class="section pillars" data-depth="How We Work" data-cam="benchWall">
     <div class="container">
       <h2 data-reveal>How we work</h2>
-      <!-- A survey line: drawn across the three principles (down them on a
-           phone), each surfacing as the line reaches it. motion.js, "survey". -->
-      <div class="pillars__survey copy-shield" data-reveal="survey">
-        <span class="pillars__line" aria-hidden="true"></span>
-        <ul class="pillars__list">
-          {pillars.map((p) => (
-            <li class="pillars__item">
-              <span class="pillars__node" aria-hidden="true"></span>
-              <h3 class="pillars__name">{p.name}</h3>
-              <p class="pillars__copy">{p.copy}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Survey items={pillars} />
     </div>
   </section>
 
@@ -97,9 +85,10 @@ const pillars = [
       <h2 data-reveal>What we trade</h2>
       <div class="trade__body">
         <p class="lede" data-reveal style="--reveal-delay: 0.1s">
-          Cement clinker and limestone, as spot cargoes and as term offtake.
-          Contracts run across the full Incoterms range, with inland logistics
-          and vessel chartering handled in house.
+          Cement clinker and limestone, as spot cargoes and term offtake, on
+          the full Incoterms range. Inland logistics and vessel chartering are
+          handled in house, so one contract covers the cargo from source to
+          delivery.
         </p>
         <a href="/commodities" class="link-line" data-reveal style="--reveal-delay: 0.2s">
           View the commodities
@@ -110,8 +99,8 @@ const pillars = [
   </section>
 
   <ContactCTA
-    heading="Talk to the desk"
-    copy="Tell us the commodity, the tonnage and where it needs to go."
+    heading="Talk to the desk."
+    copy="Tell us the commodity, the tonnage and where it needs to go. The desk replies with a firm offer."
   />
 </Base>
 
@@ -136,57 +125,6 @@ const pillars = [
   }
 
   .pillars h2 { margin-bottom: var(--space-block); }
-  /* the survey: a gold line across the top, a marker where each principle
-     stands on it, the principles as three columns below */
-  .pillars__survey { position: relative; padding-top: 2.75rem; }
-  .pillars__line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 1px;
-    background: linear-gradient(90deg, var(--gold), rgba(198, 169, 108, 0.35));
-    transform-origin: left;
-    transform: scaleX(var(--draw, 1));
-  }
-  .pillars__list {
-    list-style: none;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: clamp(2rem, 4.5vw, 5rem);
-  }
-  .pillars__item { position: relative; }
-  .pillars__node {
-    position: absolute;
-    left: 0;
-    top: calc(-2.75rem - 4px);
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--gold);
-    box-shadow: 0 0 0 5px rgba(198, 169, 108, 0.14);
-  }
-  .pillars__name { font-size: var(--size-h2); margin-bottom: 1.1rem; }
-  .pillars__copy {
-    color: var(--text-dim);
-    font-size: var(--size-body-lg);
-    max-width: 34ch;
-    transition: color 1s var(--ease-soft);
-  }
-  @media (hover: hover) {
-    .pillars__item:hover .pillars__copy { color: var(--text); transition-duration: 0.7s; transition-delay: 80ms; }
-  }
-
-  /* hidden until drawn (motion.js plays the survey and adds .in) */
-  [data-reveal="survey"] { opacity: 1; transform: none; --draw: 0; --shade: 0; }
-  [data-reveal="survey"] .pillars__node { transform: scale(0); }
-  [data-reveal="survey"] .pillars__name,
-  [data-reveal="survey"] .pillars__copy { opacity: 0; transform: translateY(1.1rem); }
-  [data-reveal="survey"].in { --draw: 1; --shade: 1; }
-  [data-reveal="survey"].in .pillars__node { transform: none; }
-  [data-reveal="survey"].in .pillars__name,
-  [data-reveal="survey"].in .pillars__copy { opacity: 1; transform: none; }
-
   .trade__grid {
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -197,21 +135,5 @@ const pillars = [
 
   @media (max-width: 860px) {
     .who__grid, .trade__grid { grid-template-columns: 1fr; }
-    /* the line runs down the left of the principles instead */
-    /* inside its card: the card's own padding, plus a lane for the line */
-    .pillars__survey { padding: 1.6rem 1.15rem 1.6rem 3rem; }
-    .pillars__line {
-      right: auto;
-      top: 1.6rem;
-      bottom: 1.6rem;
-      left: 1.25rem;
-      width: 1px;
-      height: auto;
-      background: linear-gradient(180deg, var(--gold), rgba(198, 169, 108, 0.35));
-      transform-origin: top;
-      transform: scaleY(var(--draw, 1));
-    }
-    .pillars__list { grid-template-columns: 1fr; gap: 2.6rem; }
-    .pillars__node { top: 0.55em; left: calc(-1.75rem - 4px); }
   }
 </style>
