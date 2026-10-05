@@ -11,7 +11,12 @@ const [mode, base, size, ...rest] = process.argv.slice(2);
 const [w, h] = size.split('x').map(Number);
 const ARGS = ['--ignore-gpu-blocklist', '--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader'];
 
-const browser = await chromium.launch({ headless: true, args: ARGS });
+// GPU=1 drives installed Chrome on the real GPU: an order of magnitude faster
+// to settle than SwiftShader, and what a visitor actually sees.
+const GPU_ARGS = ['--enable-gpu', '--ignore-gpu-blocklist', '--use-angle=metal'];
+const browser = await chromium.launch(process.env.GPU
+  ? { channel: 'chrome', headless: true, args: GPU_ARGS }
+  : { headless: true, args: ARGS });
 const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
 page.on('pageerror', (e) => console.log('PAGEERROR', e.message));
 page.on('console', (m) => { if (m.type() === 'error') console.log('CONSOLE', m.text()); });
@@ -63,7 +68,7 @@ if (mode === 'anchors' || mode === 'sweep') {
 
 if (mode === 'stop') {
   // node harness.mjs stop <base> <w>x<h> <outdir> <anchor[:frac]> '<json patches>' [label]
-  // patches: { stops: { name: {...} }, place: { clinker: {...} }, depth: { clinker: 1.2 } }
+  // patches: { stops: { name: {...} }, place: { vessel: {...} } }
   const out = rest[0]; fs.mkdirSync(out, { recursive: true });
   const [name, fracS] = rest[1].split(':'); const frac = fracS ? +fracS : 0;
   const patches = rest[2] ? JSON.parse(rest[2]) : {};
@@ -74,7 +79,6 @@ if (mode === 'stop') {
     const W = window.AevumWorld;
     for (const [k, v] of Object.entries(p.stops || {})) W.setStop(k, v, false);
     for (const [k, v] of Object.entries(p.place || {})) Object.assign(W.place[k], v);
-    for (const [k, v] of Object.entries(p.depth || {})) W.clipDepth[k] = v;
   }, patches);
   const A = await anchors();
   const i = A.findIndex((a) => a.stop === name);
