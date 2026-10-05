@@ -346,7 +346,7 @@ Quiet by default: one calm entrance per block, so the two pinned clip chapters a
 - `[data-reveal="row"]` — the row's children are laid left to right with a clip, 1.1s, 120ms apart.
 - `[data-reveal="rule"]` — hairline grows `scaleX(0→1)` from left, 1.4s.
 - `[data-reveal="shade"]` — the card behind copy over the world (`.copy-shield`) comes up as its own layer (`--shade` 0 to 1, 1s) ahead of the words on it.
-- `[data-reveal="survey"]` — How we work: a gold survey line is drawn across the three principles at a constant rate (down them on a phone), and each surfaces as the line reaches it: its marker, then its name and copy. The section's one authored moment.
+- `[data-reveal="survey"]` (`Survey.astro`) — a gold survey line drawn across its items at a constant rate (down them on a phone), each surfacing as the line reaches it: its marker, then its name and copy. About's How we work (three principles) and Commodities' From enquiry to delivery (four ordered steps, compact).
 - **Photos recede** as they leave through the top: `--recede` scrubbed 0 to 1 gives 5% smaller and 40% dimmer via the individual `scale` and `filter` properties, so the entrance's transform is untouched. Text never fades out.
 - `.split-line > .split-inner` — hand-split hero lines rise through their mask, 1.2s cubic-out. **The `.split-line` mask itself is never hidden** (`opacity: 1; transform: none`): it used to inherit the generic hidden state and only got it back at the END of the rise, so every page title rose invisibly and then appeared at once, 1.6rem low and jumping up.
 - **Exits:** text scrolls away untouched (a scrubbed dim near the nav made the ivory ledger's lower rows pale on ivory while they were still being read); photos recede, above.

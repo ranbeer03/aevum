@@ -349,10 +349,11 @@ and a lift on every exit, all at once, is what made the page read as crowded.
   the page flickering.
 - **Chain rows** (`data-reveal="row"`) are laid down left to right with a
   `clip-path` inset, the way the route line beside them draws.
-- **How we work** (`data-reveal="survey"`, About) is a survey line drawn across
-  the three principles (down them on a phone) at a constant rate, each
+- **Survey** (`src/components/Survey.astro`, `data-reveal="survey"`) is a line
+  drawn across its items (down them on a phone) at a constant rate, each
   surfacing as the line reaches it; the reveal computes when from each item's
-  offset along the line.
+  offset along the line. About uses it for How we work; Commodities for From
+  enquiry to delivery (`ordered compact`: an ordered list, smaller names).
 - **Cards** (`data-reveal="shade"` on `.copy-shield`) come up behind their
   copy ahead of the words: flat translucent panels with a gold hairline,
   bleeding around the copy on desktop and sitting on the page margins with
