@@ -14,8 +14,11 @@
 // `nearStop`/`small`/`setStop`/`manual` on the World API.
 ---
 
-<div id="camdev-grabber" hidden aria-hidden="true"></div>
-<div id="camdev" hidden>
+<!-- Persisted across page changes: the script below runs once, on the first
+     load, and Astro swaps the whole body on a navigation, so without this the
+     overlay was replaced by a fresh hidden copy and the controls vanished. -->
+<div id="camdev-grabber" hidden aria-hidden="true" transition:persist="camdev-grabber"></div>
+<div id="camdev" hidden transition:persist="camdev">
   <div class="camdev__bar">
     <button id="camdev-grab" class="camdev__go">Take control</button>
     <span id="camdev-stop" class="camdev__stop">...</span>
@@ -151,6 +154,8 @@
     }
 
     grab.addEventListener('click', () => (live ? release() : takeControl()));
+    // a page change mid-edit (the back button, say) hands the camera back
+    document.addEventListener('astro:before-swap', () => { if (live) release(); });
 
     reset.addEventListener('click', () => {
       const s = World.stops[editing];
